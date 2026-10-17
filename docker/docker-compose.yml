@@ -1,0 +1,64 @@
+# Run from the repository root:
+#   docker compose --env-file .env -f docker/docker-compose.yml up -d mysql
+#   docker compose --env-file .env -f docker/docker-compose.yml --profile app up -d --build   # + backend container
+#
+# Hostnames:
+#   - Application on the HOST (mvn / IDE):  DB_HOST=localhost, DB_PORT=<MYSQL_HOST_PORT>
+#   - Application INSIDE Docker (backend service below): host `mysql`, port 3306 (container port)
+name: nextrisk
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: nextrisk-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD in .env}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-nextrisk}
+      MYSQL_USER: ${MYSQL_USER:?set MYSQL_USER in .env}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?set MYSQL_PASSWORD in .env}
+      TZ: UTC
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci", "--default-time-zone=+00:00"]
+    ports:
+      - "127.0.0.1:${MYSQL_HOST_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      # Real readiness check: authenticates and runs a query (not just "port open")
+      test: ["CMD-SHELL", "mysql -h 127.0.0.1 -u\"$$MYSQL_USER\" -p\"$$MYSQL_PASSWORD\" -e 'SELECT 1' \"$$MYSQL_DATABASE\" >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  backend:
+    profiles: ["app"]
+    build:
+      context: ../backend
+    container_name: nextrisk-backend
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_NAME: ${MYSQL_DATABASE:-nextrisk}
+      DB_USER: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      JWT_ISSUER: ${JWT_ISSUER:-nextrisk-api}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-nextrisk-web}
+      JWT_ACCESS_TTL_MINUTES: ${JWT_ACCESS_TTL_MINUTES:-15}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      REFRESH_COOKIE_SECURE: ${REFRESH_COOKIE_SECURE:-true}
+      API_DOCS_ENABLED: ${API_DOCS_ENABLED:-true}
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-}
+      BOOTSTRAP_ADMIN_NAME: ${BOOTSTRAP_ADMIN_NAME:-Platform Administrator}
+    ports:
+      - "127.0.0.1:8080:8080"
+
+volumes:
+  mysql_data:
+    name: nextrisk_mysql_data

@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    # Dedicated schema (created by docker/mysql-init). Tests never touch the `nextrisk` schema.
+    url: jdbc:mysql://${TEST_DB_HOST:${DB_HOST:localhost}}:${TEST_DB_PORT:${DB_PORT:3306}}/${TEST_DB_NAME:nextrisk_test}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  flyway:
+    clean-disabled: false   # test schema only; wiped + re-migrated once per test run
+
+nextrisk:
+  security:
+    bcrypt-strength: 4
+    jwt:
+      secret: test-only-secret-that-is-at-least-32-chars-long!!
+      issuer: nextrisk-api
+      audience: nextrisk-web
+      access-ttl-minutes: 15
+    refresh:
+      cookie-secure: false
+    bootstrap-admin:
+      email: ""
+      password: ""
