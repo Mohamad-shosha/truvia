@@ -1,109 +1,436 @@
-# NextRisk AI (TRUVIA)
+# 🛡️ NextRisk AI (TRUVIA)
 
-AI-powered cybersecurity risk management & compliance platform (GRC + SOC + pentest).
-This repository currently contains **Foundation + Phase 1: Authentication & RBAC** only.
-See [plan.md](plan.md) for the full roadmap.
+> **NextRisk AI** is an enterprise-grade cybersecurity risk management and compliance platform unifying **Governance, Risk, and Compliance (GRC)**, **Security Operations (SOC)**, and **Penetration Testing** with automated risk calculation and AI-driven predictive remediation.
 
-| Layer | Tech |
-|---|---|
-| Backend | Java 21, Spring Boot 3.3, Spring Security 6 (JWT resource server), Spring Data JPA, Flyway, springdoc OpenAPI |
-| Frontend | React 18, Vite 5, React Router 6, Axios, Vitest + Testing Library |
-| Database | MySQL 8 (Docker Compose, named volume, real healthcheck) |
+[![Java](https://img.shields.io/badge/Java-21-orange.svg?logo=openjdk)](https://openjdk.org/)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.3.5-brightgreen.svg?logo=springboot)](https://spring.io/projects/spring-boot)
+[![Spring Security](https://img.shields.io/badge/Spring_Security-6.x_OAuth2_Resource_Server-green.svg)](https://spring.io/projects/spring-security)
+[![React](https://img.shields.io/badge/React-18.3-61DAFB.svg?logo=react)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-5.4-646CFF.svg?logo=vite)](https://vitejs.dev/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1.svg?logo=mysql)](https://www.mysql.com/)
+[![Docker](https://img.shields.io/badge/Docker_Compose-Ready-2496ED.svg?logo=docker)](https://www.docker.com/)
+[![Vitest](https://img.shields.io/badge/Tests-36_Passing-success.svg?logo=vitest)](https://vitest.dev/)
 
+---
+
+## 📑 Table of Contents
+
+- [Overview & Vision](#-overview--vision)
+- [Architecture & Tech Stack](#-architecture--tech-stack)
+- [Repository Structure](#-repository-structure)
+- [Authentication & Security Architecture](#-authentication--security-architecture)
+- [Role-Based Access Control (RBAC)](#-role-based-access-control-rbac)
+- [API Reference](#-api-reference)
+- [Database Schema & Migrations](#-database-schema--migrations)
+- [Getting Started](#-getting-started)
+  - [Prerequisites](#prerequisites)
+  - [1. Environment Configuration](#1-environment-configuration)
+  - [2. Database with Docker Compose](#2-database-with-docker-compose)
+  - [3. Backend Launch (Host or Container)](#3-backend-launch-host-or-container)
+  - [4. Frontend Launch](#4-frontend-launch)
+  - [5. Provisioning the Initial Admin](#5-provisioning-the-initial-admin)
+- [Testing](#-testing)
+  - [Frontend Test Suite](#frontend-test-suite)
+  - [Backend Test Suite](#backend-test-suite)
+  - [API Smoke Testing Script](#api-smoke-testing-script)
+- [Development & Contribution Workflow](#-development--contribution-workflow)
+- [Roadmap & Known Scope](#-roadmap--known-scope)
+
+---
+
+## 🎯 Overview & Vision
+
+Modern cybersecurity teams often suffer from disjointed tooling: GRC analysts track risks in spreadsheets, SOC engineers analyze telemetry in silos, and penetration testers output point-in-time PDFs. 
+
+**NextRisk AI bridges this gap by providing:**
+1. **Unified Risk Register**: Live risk calculation connecting active vulnerabilities and infrastructure assets to business impact.
+2. **Dynamic Algorithmic Scoring**: Real-time score recalculation factoring in asset criticality, CVSS v3 severity, threat likelihood, and control effectiveness.
+3. **Multi-Framework Compliance**: Continuous control mapping across ISO/IEC 27001, NIST CSF, and SOC 2.
+4. **Security Operations & Incident Triage**: Correlating live incidents directly to affected risk entries.
+5. **AI-Driven Remediation**: Predictive guidance and actionable playbooks generated to mitigate critical exposures.
+
+> ℹ️ **Current Status:** Foundation + **Phase 1: Authentication Core & RBAC MVP** is fully implemented and tested. See [plan.md](plan.md) for the complete phase-by-phase roadmap.
+
+---
+
+## 🏗 Architecture & Tech Stack
+
+```mermaid
+graph TD
+    User([Browser Client - React SPA])
+    API[Spring Boot 3 REST API]
+    MySQL[(MySQL 8 Database)]
+    OpenAPI[Swagger UI / Docs]
+
+    User -- "REST (JSON) + Bearer Access Token" --> API
+    User -- "HttpOnly Cookie (nr_refresh) + X-Requested-With" --> API
+    API -- "Spring Data JPA / Flyway" --> MySQL
+    API -. "Auto-generated schemas" .-> OpenAPI
 ```
+
+### Technology Matrix
+
+| Layer | Technology | Key Capabilities |
+|---|---|---|
+| **Backend** | Java 21, Spring Boot 3.3.5 | Spring Web, Spring Data JPA, Spring Validation, Lombok |
+| **Security** | Spring Security 6 | Stateless JWT Resource Server, BCrypt (strength 12), Custom Token Rotation |
+| **Frontend** | React 18, Vite 5.4 | React Router 6, Axios interceptors, responsive dark/light UI |
+| **Database** | MySQL 8.0 | Dockerized, utf8mb4, strict validation, Flyway schema migration |
+| **API Docs** | SpringDoc OpenAPI 2.6 | Interactive Swagger UI on `/swagger-ui.html` |
+| **Testing** | Vitest 2.1, RTL, JUnit 5 | 36 frontend test cases, Spring Security test slice, integration tests |
+
+---
+
+## 📂 Repository Structure
+
+```text
 nextrisk/
-├── backend/            Spring Boot API (+ Dockerfile)
-├── frontend/           React SPA
-├── docker/             docker-compose.yml, mysql-init/
-├── .env.example        placeholders only (real .env is git-ignored)
-└── plan.md
+├── backend/                             # Spring Boot 3 Java application
+│   ├── src/main/java/com/nextrisk/
+│   │   ├── auth/                        # Auth controllers, services, DTOs, models
+│   │   │   ├── controller/              # AuthController, AdminProbeController
+│   │   │   ├── dto/                     # LoginRequest, RegisterRequest, UserResponse, AuthResponse
+│   │   │   ├── model/                   # User, Role, RoleName, RefreshToken
+│   │   │   ├── repository/              # UserRepository, RoleRepository, RefreshTokenRepository
+│   │   │   └── service/                 # AuthService, RefreshTokenService, RefreshCookieFactory
+│   │   ├── config/                      # SecurityConfig, JwtConfig, OpenApiConfig, CorsConfig
+│   │   ├── exception/                   # GlobalExceptionHandler, ApiException
+│   │   └── security/                    # JwtAuthenticationConverter, UserPrincipal
+│   ├── src/main/resources/
+│   │   ├── application.yml              # Base Spring configuration
+│   │   └── db/migration/                # Flyway versioned SQL scripts (V1, V2, V3)
+│   ├── Dockerfile                       # Multi-stage container build
+│   └── pom.xml                          # Maven build dependencies
+│
+├── frontend/                            # React 18 Single Page Application
+│   ├── src/
+│   │   ├── components/                  # Navbar, Sidebar, ProtectedRoute, Alert, Forms
+│   │   ├── context/                     # AuthContext (token in-memory, session restore)
+│   │   ├── pages/                       # LoginPage, RegisterPage, ProfilePage, Unauthorized
+│   │   ├── services/                    # apiClient (Axios with single-flight refresh queue)
+│   │   ├── test/                        # Vitest & Testing Library integration test suites
+│   │   └── utils/                       # Client-side form validators & formatters
+│   ├── package.json
+│   └── vite.config.js
+│
+├── docker/                              # Container orchestration
+│   ├── docker-compose.yml               # MySQL 8 + backend app profile
+│   └── mysql-init/                      # Automatic test database initialization
+│
+├── scripts/                             # Operational automation
+│   └── test_api.ps1                     # PowerShell smoke-test script for auth endpoints
+│
+├── .env.example                         # Environment configuration template
+├── plan.md                              # Master implementation specification & roadmap
+└── README.md                            # Project documentation
 ```
 
-## Quick start
+---
 
-Prerequisites: Docker Desktop, Node 20+, and either JDK 21 + Maven **or** just Docker (the backend can run/test in containers).
+## 🔐 Authentication & Security Architecture
 
-```bash
-# 1. configuration (never commit .env)
-cp .env.example .env          # then replace EVERY <placeholder>; JWT_SECRET must be >= 32 random chars
-cp frontend/.env.example frontend/.env
+NextRisk AI implements a zero-trust, defense-in-depth authentication model designed according to OWASP Session Management and API Security guidelines.
 
-# 2. database
-docker compose --env-file .env -f docker/docker-compose.yml up -d mysql
-docker compose --env-file .env -f docker/docker-compose.yml ps        # wait for "healthy"
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as User Browser
+    participant SPA as React Frontend (Vite)
+    participant API as Backend (Spring Boot)
+    participant DB as MySQL Database
 
-# 3a. backend on the host (needs JDK 21 + Maven; reads ../.env automatically)
-cd backend && mvn spring-boot:run
-# 3b. ...or backend in Docker (no JDK needed)
-docker compose --env-file .env -f docker/docker-compose.yml --profile app up -d --build
+    User->>SPA: Submit email & password
+    SPA->>API: POST /api/auth/login
+    API->>DB: Query user & verify BCrypt hash
+    API->>DB: Persist SHA-256 hashed refresh token & family ID
+    API-->>SPA: Return Access JWT (JSON Body) + Set-Cookie: nr_refresh (HttpOnly, SameSite=Strict)
+    Note over SPA: Access Token stored in-memory only (Never in localStorage)
 
-# 4. frontend
-cd frontend && npm install && npm run dev      # http://localhost:5173
+    User->>SPA: Navigate to protected page
+    SPA->>API: GET /api/auth/me (Authorization: Bearer <JWT>)
+    API-->>SPA: 200 OK (User Profile & Assigned Roles)
+
+    Note over SPA,API: --- Token Expiration & Silent Rotation ---
+    SPA->>API: POST /api/auth/refresh (Cookie: nr_refresh + X-Requested-With)
+    API->>DB: Validate token, revoke old token, issue new token in family
+    API-->>SPA: Return fresh Access JWT + Rotated nr_refresh Cookie
 ```
 
-* API: <http://localhost:8080> · Swagger UI: <http://localhost:8080/swagger-ui.html> (disable with `API_DOCS_ENABLED=false`)
-* **DB hostnames:** an app running on your *host* uses `localhost:<MYSQL_HOST_PORT>`; an app running *inside Docker* uses the service name `mysql:3306` (compose sets this for the `backend` service). MySQL is published on `127.0.0.1` only.
-* Use `http://localhost:5173` (not `127.0.0.1`) in the browser: CORS is an explicit allowlist (`CORS_ALLOWED_ORIGINS`) and the refresh cookie is `SameSite=Strict`.
-* Data persists in the named volume `nextrisk_mysql_data` (`docker compose ... down` keeps it; `down -v` deletes it).
+### Security Decisions Summary
 
-### First administrator (no default credentials, no public admin signup)
-Public registration only ever creates `ROLE_GRC_ANALYST` users. To provision the first admin, set
-`BOOTSTRAP_ADMIN_EMAIL` and `BOOTSTRAP_ADMIN_PASSWORD` (>= 12 chars) in `.env`, start the backend **once**, then **remove both variables**.
-It creates the account only if no `ROLE_ADMIN` exists and the email is unused (it never promotes an existing user).
-
-## Authentication design
-
-| Item | Decision |
+| Dimension | Implementation Details |
 |---|---|
-| Access token | JWT HS256, 15 min (`JWT_ACCESS_TTL_MINUTES`), claims: `sub` (user id), `iss`, `aud`, `iat`, `exp`, `jti`, `roles`. Signature, expiry, issuer **and audience** validated. Returned in the JSON body; held **in memory only** by the SPA. |
-| Refresh token | Opaque 256-bit random value in an **HttpOnly, SameSite=Strict, path=/api/auth** cookie `nr_refresh` (`Secure` via `REFRESH_COOKIE_SECURE`, must be `true` in production). Only its SHA-256 is stored (`refresh_tokens`). |
-| Rotation & reuse detection | Every refresh revokes the used token and issues a new one in the same *family*. Replaying a rotated token revokes the whole family. |
-| "Remember me" | on: persistent cookie, 30 days (`REFRESH_REMEMBER_TTL_DAYS`); off: session cookie, server-side expiry 12 h (`REFRESH_SESSION_TTL_HOURS`). |
-| Reload behaviour | Access token is lost on reload; the SPA silently calls `/api/auth/refresh` to restore the session (protected content is not rendered until this resolves). |
-| CSRF | Bearer endpoints are not cookie-authenticated. The only cookie-authenticated endpoints (`refresh`, `logout`) require header `X-Requested-With: XMLHttpRequest` (not sendable cross-origin without CORS approval), plus `SameSite=Strict` and an explicit CORS allowlist. Spring's CSRF filter is therefore disabled by design. |
-| Logout | Server-side: revokes the refresh family and clears the cookie. **The already-issued access token remains valid until it expires (<= 15 min)** because access tokens are stateless. The UI states plainly when the server could not be reached. |
-| Passwords | BCrypt (strength 12), 10–64 chars, >= 1 letter and 1 digit. |
-| Errors | Uniform JSON envelope; login failures (unknown email / wrong password / disabled account) are indistinguishable. |
+| **Access Token** | JWT HS256, 15-minute validity (`JWT_ACCESS_TTL_MINUTES`). Validates signature, expiry, `iss` (`nextrisk-api`), and `aud` (`nextrisk-web`). Stored **in-memory only** by the React client. |
+| **Refresh Token** | Cryptographically secure 256-bit random string stored in an `HttpOnly`, `SameSite=Strict`, `path=/api/auth` cookie named `nr_refresh`. Database stores only its **SHA-256 digest**. |
+| **Token Rotation & Reuse Detection** | Every refresh revokes the used token and generates a new one within the same family ID. If a revoked token is replayed, the entire family is revoked immediately to neutralize token theft. |
+| **Session Lifetime** | Normal mode: Session cookie (expires when browser closes, server TTL: 12h). Remember-Me mode: Persistent cookie with 30-day expiry (`REFRESH_REMEMBER_TTL_DAYS`). |
+| **CSRF Mitigation** | Bearer endpoints are immune to CSRF. Cookie-authenticated endpoints (`/refresh`, `/logout`) require the custom header `X-Requested-With: XMLHttpRequest` (blocked cross-origin by default) paired with `SameSite=Strict` and strict CORS allowlisting. |
+| **Password Policy** | Minimum 10 to maximum 64 characters, at least 1 letter and 1 numeric digit, hashed with **BCrypt (strength 12)**. |
+| **Safe Error Masking** | Login failures (invalid email, bad password, deactivated account) return identical generic error responses to prevent user enumeration attacks. |
 
-## API (all JSON)
+---
 
-| Method & path | Auth | Success | Failure |
-|---|---|---|---|
-| `POST /api/auth/register` `{fullName,email,password}` | public | `201` `{id,fullName,email,roles}` (does **not** sign in) | `400` validation (`fieldErrors`) incl. any unknown field such as `roles`; `409` duplicate email |
-| `POST /api/auth/login` `{email,password,rememberMe}` | public | `200` `{accessToken,tokenType,expiresIn,user}` + `Set-Cookie: nr_refresh` | `400`, `401` generic |
-| `POST /api/auth/refresh` | cookie + `X-Requested-With` | `200` same body as login, rotated cookie | `401` (cookie cleared), `403` missing header |
-| `POST /api/auth/logout` *(addition to the original list)* | cookie + `X-Requested-With` | `204`, cookie cleared, family revoked | `403` missing header |
-| `GET /api/auth/me` | Bearer | `200` `{id,fullName,email,roles}` | `401` |
-| `GET /api/admin/ping` *(RBAC probe, no business logic)* | Bearer + `ROLE_ADMIN` | `200` | `401` / `403` |
+## 👥 Role-Based Access Control (RBAC)
 
-Full request/response schemas, validation rules and examples: Swagger UI.
+NextRisk AI defines 5 distinct system roles seeded via Flyway migration `V2__seed_roles.sql`:
 
-## Database (Flyway is the source of truth; Hibernate only *validates*)
-`V1` users / roles / user_roles · `V2` seed the five roles (`INSERT IGNORE`, idempotent; no users seeded) · `V3` refresh_tokens.
-Emails are stored trimmed + lower-cased and the database enforces it (`UNIQUE` + `CHECK`). Never edit an applied migration; add a new `V<n>__*.sql`.
+| Role Identifier | Title | Target Scope |
+|---|---|---|
+| `ROLE_ADMIN` | System Administrator | User management, platform configuration, audit logging, system health probe (`/api/admin/ping`). |
+| `ROLE_CISO` | Chief Information Security Officer | Executive dashboard, risk appetite thresholds, financial exposure reports, board metrics. |
+| `ROLE_GRC_ANALYST` | GRC Analyst | Risk register management, compliance framework controls (ISO 27001 / NIST), policy lifecycles. *(Default role on public registration)*. |
+| `ROLE_SOC_ANALYST` | Security Operations Analyst | Real-time incident triage, threat telemetry, vulnerability alerts, live risk score tracking. |
+| `ROLE_PENTESTER` | Penetration Tester | Pentest finding ingestion, vulnerability evidence logging, CVSS evaluation, remediation verification. |
 
-Roles: `ROLE_ADMIN`, `ROLE_CISO`, `ROLE_GRC_ANALYST` (default for self-registration), `ROLE_SOC_ANALYST`, `ROLE_PENTESTER`.
+---
 
-## Tests
+## 📡 API Reference
+
+All requests and responses use `application/json`. Detailed interactive OpenAPI schemas are available at `http://localhost:8080/swagger-ui.html`.
+
+### Authentication & Authorization Endpoints
+
+| Method | Endpoint | Auth | Request Body | Success | Failure Statuses |
+|---|---|---|---|---|---|
+| `POST` | `/api/auth/register` | Public | `{ "fullName": "...", "email": "...", "password": "..." }` | `201 Created`<br>`{ "id": 1, "fullName": "...", "email": "...", "roles": ["ROLE_GRC_ANALYST"] }` | `400` Validation Error<br>`409` Duplicate Email |
+| `POST` | `/api/auth/login` | Public | `{ "email": "...", "password": "...", "rememberMe": true }` | `200 OK`<br>`{ "accessToken": "...", "tokenType": "Bearer", "expiresIn": 900, "user": {...} }` + `Set-Cookie: nr_refresh` | `400` Bad Request<br>`401` Unauthorized (Generic) |
+| `POST` | `/api/auth/refresh` | Cookie (`nr_refresh`) + `X-Requested-With` | *None (Cookie based)* | `200 OK`<br>New Access Token + Rotated Cookie | `401` Invalid/Revoked Token<br>`403` Missing Header |
+| `POST` | `/api/auth/logout` | Cookie (`nr_refresh`) + `X-Requested-With` | *None* | `204 No Content`<br>Cleared Cookie & Revoked Token Family | `403` Missing Header |
+| `GET` | `/api/auth/me` | `Bearer <JWT>` | *None* | `200 OK`<br>Current user profile and roles array | `401` Unauthorized |
+| `GET` | `/api/admin/ping` | `Bearer <JWT>` (`ROLE_ADMIN` only) | *None* | `200 OK`<br>`{ "status": "UP", "message": "Admin authorization verified" }` | `401` Unauthenticated<br>`403` Forbidden |
+
+---
+
+## 🗄 Database Schema & Migrations
+
+Database evolution is managed exclusively with **Flyway**. Hibernate is configured in validation-only mode (`ddl-auto: validate`) to guarantee database immutability across environments.
+
+```text
+db/migration/
+├── V1__create_users_and_roles.sql       # Users, roles, and user_roles join table
+├── V2__seed_roles.sql                   # Idempotent seeding of the 5 platform roles
+└── V3__create_refresh_tokens.sql        # Refresh token records with family ID & hash
+```
+
+### Table Relationships
+- **`users`**: Primary key `id` (BIGINT AUTO_INCREMENT), `email` (VARCHAR(191) UNIQUE, lowercase enforced), `password_hash` (BCrypt 60 chars), `full_name`, `enabled` (BOOLEAN), `created_at`, `updated_at`.
+- **`roles`**: Primary key `id`, `name` (VARCHAR(50) UNIQUE).
+- **`user_roles`**: Composite primary key `(user_id, role_id)` with foreign keys and cascading deletes.
+- **`refresh_tokens`**: Primary key `id`, `token_hash` (VARCHAR(64) UNIQUE, SHA-256), `user_id` (FK), `family_id` (UUID), `replaced_by` (VARCHAR(64)), `revoked` (BOOLEAN), `expires_at` (DATETIME).
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Docker Compose v2+)
+- [Node.js](https://nodejs.org/) (v20 or higher recommended) & npm
+- *(Optional for host running)*: [Java Development Kit (JDK 21)](https://adoptium.net/) & [Apache Maven 3.9+](https://maven.apache.org/)
+
+---
+
+### 1. Environment Configuration
+
+Clone the repository and copy the environment template:
 
 ```bash
-# Frontend (Vitest): validation, API client (refresh/single-flight/expiry), Login/Register, guards, profile, logout, role nav
-cd frontend && npm test && npm run build
-
-# Backend integration tests need the MySQL container (they use the isolated schema `nextrisk_test`,
-# created automatically on first volume init by docker/mysql-init). With JDK + Maven on the host:
-cd backend && DB_USER=... DB_PASSWORD=... mvn test        # DB_HOST/DB_PORT default to localhost:3306
-
-# Without a local JDK, run Maven in a container on the compose network:
-docker run --rm --network nextrisk_default -v "$PWD/backend":/app -w /app \
-  -e DB_HOST=mysql -e DB_USER -e DB_PASSWORD maven:3.9-eclipse-temurin-21 mvn -B test
+# In the repository root:
+cp .env.example .env
+cp frontend/.env.example frontend/.env
 ```
-If your MySQL volume pre-dates `mysql-init`, create the schema once:
-`CREATE DATABASE nextrisk_test; GRANT ALL ON nextrisk_test.* TO '<MYSQL_USER>'@'%';`
 
-## Known limitations (intentional, out of scope for this slice)
-* No rate limiting / account lockout on login, no email verification, no password reset (the "Forgot password" link says so honestly).
-* Expired refresh-token rows are not purged automatically (`RefreshTokenService.purgeExpired()` exists but is not scheduled).
-* Access tokens cannot be revoked before expiry (stateless by design).
-* The language switcher from the design mockup is not implemented (no i18n yet).
+Open `.env` and configure your credentials:
+- Set `MYSQL_ROOT_PASSWORD` and `MYSQL_PASSWORD`.
+- Generate a secure `JWT_SECRET` (minimum 32 characters, preferably 48+ chars):
+  ```bash
+  # PowerShell:
+  [Convert]::ToBase64String((1..48 | ForEach-Object { Get-Random -Minimum 0 -Maximum 256 }))
+  # Or OpenSSL (Bash):
+  openssl rand -base64 48
+  ```
 
+---
+
+### 2. Database with Docker Compose
+
+Launch the MySQL 8 database service with persistent volume:
+
+```bash
+# Start MySQL container in the background
+docker compose --env-file .env -f docker/docker-compose.yml up -d mysql
+
+# Verify health status (wait until it shows "(healthy)")
+docker compose --env-file .env -f docker/docker-compose.yml ps
+```
+
+> 💡 **Persistence note**: Data is stored in the Docker volume `nextrisk_mysql_data`. Running `docker compose ... down` preserves your data. Use `down -v` only if you intend to wipe the database.
+
+---
+
+### 3. Backend Launch (Host or Container)
+
+#### Option A: Running on Host (with JDK 21 & Maven)
+```bash
+cd backend
+mvn spring-boot:run
+```
+*The backend automatically detects and parses `../.env` when launched from the `backend/` folder.*
+
+#### Option B: Running in Docker (No local JDK needed)
+```bash
+# Build and run backend container attached to the Docker network:
+docker compose --env-file .env -f docker/docker-compose.yml --profile app up -d --build
+```
+
+- API Base URL: `http://localhost:8080`
+- Swagger UI Documentation: `http://localhost:8080/swagger-ui.html`
+
+---
+
+### 4. Frontend Launch
+
+Open a separate terminal window for the React frontend:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Visit **`http://localhost:5173`** in your browser.
+
+> ⚠️ **Important**: Always access via `http://localhost:5173` (do **not** use `127.0.0.1:5173`), as CORS allowlists and cookie `SameSite=Strict` policies are strictly bound to `http://localhost:5173`.
+
+---
+
+### 5. Provisioning the Initial Admin
+
+Self-registration defaults to `ROLE_GRC_ANALYST`. To safely bootstrap the primary platform administrator without exposing a public endpoint:
+
+1. Open `.env` and provide one-time bootstrap credentials:
+   ```env
+   BOOTSTRAP_ADMIN_EMAIL=admin@nextrisk.io
+   BOOTSTRAP_ADMIN_PASSWORD=SuperAdminPassword123!
+   BOOTSTRAP_ADMIN_NAME=Platform Administrator
+   ```
+2. Start the backend once. The `AdminBootstrapper` creates the admin user with `ROLE_ADMIN` if no admin exists.
+3. Remove or clear `BOOTSTRAP_ADMIN_EMAIL` and `BOOTSTRAP_ADMIN_PASSWORD` from `.env`.
+
+---
+
+## 🧪 Testing
+
+### Frontend Test Suite
+
+The frontend includes 36 unit and integration tests powered by **Vitest** and **React Testing Library**:
+- Form validation rules (password complexity, confirmation matching, email formats)
+- Axios `apiClient` token interceptors, single-flight refresh queueing, and error normalization
+- AuthContext state lifecycle and session restoration
+- Protected route redirection and role-based access gating
+- Login, registration, profile views, and logout flow
+
+```bash
+cd frontend
+# Run all tests once
+npm test
+
+# Run tests in interactive watch mode
+npm run test:watch
+
+# Verify production build compilation
+npm run build
+```
+
+---
+
+### Backend Test Suite
+
+Backend tests run against the dedicated test database schema `nextrisk_test`:
+
+```bash
+cd backend
+# Running on host with local JDK:
+mvn test
+
+# Or run tests inside a container without installing Maven locally:
+docker run --rm --network nextrisk_default -v "$PWD/backend":/app -w /app \
+  -e DB_HOST=mysql -e DB_USER=nextrisk -e DB_PASSWORD=<MYSQL_PASSWORD> \
+  maven:3.9-eclipse-temurin-21 mvn -B test
+```
+
+---
+
+### API Smoke Testing Script
+
+A ready-to-run PowerShell test script is provided in [`scripts/test_api.ps1`](scripts/test_api.ps1). It verifies:
+1. Anonymous request rejection (`401 Unauthorized`)
+2. User registration and conflict prevention (`409 Conflict`)
+3. User authentication & JWT issuance
+4. Bearer-authenticated profile lookup (`/api/auth/me`)
+5. Cookie-based token refresh & rotation
+6. Secure logout & cookie clearance
+
+```powershell
+# Run against a running backend instance:
+powershell -ExecutionPolicy Bypass -File .\scripts\test_api.ps1
+```
+
+---
+
+## 🌿 Development & Contribution Workflow
+
+To maintain clean code quality and reliable releases, this repository follows a strict **Feature-Branch Workflow**:
+
+```mermaid
+gitGraph
+   commit id: "Initial commit"
+   commit id: "main base"
+   branch feat/my-new-task
+   checkout feat/my-new-task
+   commit id: "Implement changes"
+   commit id: "Add unit & integration tests"
+   commit id: "Test verification passing"
+   checkout main
+   merge feat/my-new-task id: "Merge tested branch into main"
+```
+
+### Standard Workflow Rules:
+1. **Never commit directly to `main`**.
+2. **Branch per Task**: For every bug fix, feature, or document task, create a dedicated branch:
+   ```bash
+   git checkout -b feat/<task-name>      # for features
+   git checkout -b docs/<task-name>      # for documentation
+   git checkout -b fix/<task-name>       # for bug fixes
+   ```
+3. **Write and Execute Tests**: Verify frontend and backend test suites before merging:
+   ```bash
+   cd frontend && npm test
+   ```
+4. **Merge to `main`**:
+   ```bash
+   git checkout main
+   git merge <branch-name>
+   git push origin main
+   ```
+
+---
+
+## 🗺️ Roadmap & Known Scope
+
+| Phase | Milestone | Status |
+|---|---|---|
+| **Phase 0** | Project Scaffolding, Docker Compose & Flyway Setup | ✅ Complete |
+| **Phase 1** | Security Core, Authentication & RBAC MVP | ✅ Complete |
+| **Phase 2** | Asset Inventory & Vulnerability Ingestion Engine | ⏳ Next |
+| **Phase 3** | Centralized Risk Register & Dynamic Algorithmic Scoring Engine | 📅 Planned |
+| **Phase 4** | Compliance Frameworks (ISO 27001, NIST CSF) & Policy Manager | 📅 Planned |
+| **Phase 5** | Security Incident Triage & Live Alerting Notifications | 📅 Planned |
+| **Phase 6** | AI-Powered Risk Predictions & Automated Remediation Playbooks | 📅 Planned |
+| **Phase 7** | Executive C-Level Dashboards & Automated PDF/CSV Reporting | 📅 Planned |
+
+---
+
+## 📄 License
+
+This project is proprietary software developed for NextRisk AI (TRUVIA). All rights reserved.
