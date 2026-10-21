@@ -14,6 +14,7 @@ export default function TextField({
   hint,
   autoComplete,
   disabled,
+  hideLabel = false,
   ...rest
 }) {
   const uid = useId();
@@ -27,7 +28,7 @@ export default function TextField({
 
   return (
     <div className="field">
-      <label htmlFor={id} className="field__label">
+      <label htmlFor={id} className={`field__label${hideLabel ? ' sr-only' : ''}`}>
         {label}
       </label>
       <div className={`field__control${error ? ' field__control--error' : ''}${disabled ? ' field__control--disabled' : ''}`}>

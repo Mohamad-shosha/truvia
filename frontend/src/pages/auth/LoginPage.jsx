@@ -88,6 +88,7 @@ export default function LoginPage() {
           error={visible('email')}
           icon={<MailIcon />}
           disabled={submitting}
+          hideLabel={true}
         />
         <TextField
           label="Password"
@@ -101,15 +102,33 @@ export default function LoginPage() {
           error={visible('password')}
           icon={<LockIcon />}
           disabled={submitting}
+          hideLabel={true}
         />
 
         <div className="form__row">
           <label className="check">
-            <input type="checkbox" name="rememberMe" checked={values.rememberMe} onChange={set('rememberMe')} disabled={submitting} />
-            <span>Remember me</span>
+            <input
+              type="checkbox"
+              name="rememberMe"
+              checked={values.rememberMe}
+              onChange={set('rememberMe')}
+              disabled={submitting}
+            />
+            <span className="check__box" aria-hidden="true">
+              <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3.5 8.5l3 3 6-7" />
+              </svg>
+            </span>
+            <span className="check__label">Remember me</span>
           </label>
-          <button type="button" className="link-btn" onClick={() => setShowForgot((s) => !s)} aria-expanded={showForgot}>
-            Forgot Password?
+          <button
+            type="button"
+            className="link-btn link-btn--accent"
+            onClick={() => setShowForgot((s) => !s)}
+            aria-expanded={showForgot}
+            aria-label="Forgot Password?"
+          >
+            Forget Password ?
           </button>
         </div>
         {showForgot && (
@@ -122,7 +141,10 @@ export default function LoginPage() {
       </form>
 
       <footer className="auth-card__foot">
-        <span>I don&apos;t have an Account</span> <Link to="/register">Sign Up</Link>
+        <span>I don&apos;t have an Account</span>{' '}
+        <Link to="/register" className="auth-card__link-accent">
+          Sign Up
+        </Link>
       </footer>
     </AuthLayout>
   );
