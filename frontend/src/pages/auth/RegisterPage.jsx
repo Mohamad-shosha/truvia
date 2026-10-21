@@ -88,7 +88,6 @@ export default function RegisterPage() {
           error={visible('fullName')}
           icon={<UserIcon />}
           disabled={submitting}
-          hideLabel={true}
         />
         <TextField
           label="Email Address"
@@ -102,7 +101,6 @@ export default function RegisterPage() {
           error={visible('email')}
           icon={<MailIcon />}
           disabled={submitting}
-          hideLabel={true}
         />
         <TextField
           label="Password"
@@ -117,7 +115,6 @@ export default function RegisterPage() {
           error={visible('password')}
           icon={<LockIcon />}
           disabled={submitting}
-          hideLabel={true}
         />
         <TextField
           label="Confirm Password"
@@ -131,7 +128,6 @@ export default function RegisterPage() {
           error={visible('confirm')}
           icon={<LockIcon />}
           disabled={submitting}
-          hideLabel={true}
         />
 
         <Button id="register-submit" type="submit" loading={submitting} icon={<ArrowIcon />}>
@@ -140,10 +136,7 @@ export default function RegisterPage() {
       </form>
 
       <footer className="auth-card__foot">
-        <span>Already have an Account</span>{' '}
-        <Link to="/login" className="auth-card__link-accent">
-          Log In
-        </Link>
+        <span>Already have an Account</span> <Link to="/login">Log In</Link>
       </footer>
     </AuthLayout>
   );
