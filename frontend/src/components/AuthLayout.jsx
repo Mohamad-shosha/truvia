@@ -9,270 +9,203 @@ const FEATURES = [
   { icon: <BrainIcon />, title: 'AI-Powered', sub: 'Decisions' },
 ];
 
-function HeroArt() {
+/**
+ * Background illustration. Drawn in the coordinate space of the 1024x576 reference
+ * canvas so every element sits exactly where it does in the design.
+ */
+function StageArt() {
   return (
-    <div className="hero__art-container">
-      <svg className="hero__art" viewBox="0 0 620 440" fill="none" aria-hidden="true" focusable="false">
-        <defs>
-          {/* Gradients */}
-          <linearGradient id="shield-front-grad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="var(--shield-front-1, #ffffff)" />
-            <stop offset="60%" stopColor="var(--shield-front-2, #f3faf6)" />
-            <stop offset="100%" stopColor="var(--shield-front-3, #d7f5e3)" />
-          </linearGradient>
+    <svg className="stage-art" viewBox="0 0 1024 576" fill="none" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="sa-face" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="var(--sa-face-1)" />
+          <stop offset="1" stopColor="var(--sa-face-2)" />
+        </linearGradient>
+        <linearGradient id="sa-rim" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="var(--sa-rim-1)" />
+          <stop offset="1" stopColor="var(--sa-rim-2)" />
+        </linearGradient>
+        <linearGradient id="sa-glass" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#7be3a8" stopOpacity=".5" />
+          <stop offset="1" stopColor="#1fae5b" stopOpacity=".12" />
+        </linearGradient>
+        <linearGradient id="sa-mark" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#3fd57f" />
+          <stop offset="1" stopColor="#12934a" />
+        </linearGradient>
+        <linearGradient id="sa-line" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#1fae5b" stopOpacity="0" />
+          <stop offset=".25" stopColor="#1fae5b" stopOpacity=".95" />
+          <stop offset=".85" stopColor="#3fd57f" stopOpacity=".7" />
+          <stop offset="1" stopColor="#3fd57f" stopOpacity="0" />
+        </linearGradient>
+        <radialGradient id="sa-globe" cx=".5" cy=".5" r=".5">
+          <stop offset="0" stopColor="var(--sa-globe-fill)" stopOpacity=".7" />
+          <stop offset="1" stopColor="var(--sa-globe-fill)" stopOpacity="0" />
+        </radialGradient>
+        <filter id="sa-blur" x="-30%" y="-80%" width="160%" height="260%">
+          <feGaussianBlur stdDeviation="9" />
+        </filter>
+        <filter id="sa-shadow" x="-30%" y="-30%" width="160%" height="170%">
+          <feDropShadow dx="0" dy="9" stdDeviation="9" floodColor="var(--sa-shadow)" />
+        </filter>
+      </defs>
 
-          <linearGradient id="shield-bevel" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--shield-bevel-1, #ffffff)" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="var(--shield-bevel-2, #34d399)" stopOpacity="0.3" />
-          </linearGradient>
+      {/* faint architectural panels on the right / bottom */}
+      <g fill="var(--sa-panel-fill)" stroke="var(--sa-panel-stroke)" strokeWidth="1">
+        <polygon points="968,126 1060,96 1060,236 968,262" />
+        <polygon points="1000,300 1090,262 1090,420 1000,462" />
+        <polygon points="470,520 640,470 760,500 590,576 470,576" />
+        <polygon points="760,500 900,470 1000,500 860,576 740,576" />
+      </g>
 
-          <linearGradient id="glass-pane-1" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#34d399" stopOpacity="0.25" />
-            <stop offset="50%" stopColor="#10b981" stopOpacity="0.12" />
-            <stop offset="100%" stopColor="#059669" stopOpacity="0.05" />
-          </linearGradient>
-
-          <linearGradient id="glass-pane-2" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#6ee7b7" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="#10b981" stopOpacity="0.15" />
-          </linearGradient>
-
-          <linearGradient id="circuit-grad-1" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#10b981" stopOpacity="0.8" />
-            <stop offset="70%" stopColor="#34d399" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="#059669" stopOpacity="0.2" />
-          </linearGradient>
-
-          <linearGradient id="circuit-grad-2" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#059669" stopOpacity="0.9" />
-            <stop offset="50%" stopColor="#10b981" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#34d399" stopOpacity="0.15" />
-          </linearGradient>
-
-          {/* Glow Filters */}
-          <filter id="neon-glow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="6" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-
-          <filter id="shield-shadow" x="-30%" y="-30%" width="160%" height="160%">
-            <feDropShadow dx="-10" dy="24" stdDeviation="18" floodColor="var(--shield-shadow-color, rgba(16, 185, 129, 0.28))" />
-          </filter>
-
-          <filter id="soft-glow" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="12" />
-          </filter>
-        </defs>
-
-        {/* Ambient Floor Glow */}
-        <ellipse cx="160" cy="360" rx="140" ry="40" fill="var(--art-floor-glow, rgba(16, 185, 129, 0.2))" filter="url(#soft-glow)" />
-        <ellipse cx="360" cy="380" rx="200" ry="30" fill="var(--art-floor-glow-2, rgba(52, 211, 153, 0.15))" filter="url(#soft-glow)" />
-
-        {/* Holographic Wireframe Globe in upper area */}
-        <g className="hero__globe" opacity="var(--globe-opacity, 0.75)">
-          {/* Main sphere outlines */}
-          <circle cx="410" cy="160" r="140" stroke="var(--globe-stroke, rgba(16, 185, 129, 0.18))" strokeWidth="1" strokeDasharray="3 4" />
-          <ellipse cx="410" cy="160" rx="140" ry="50" stroke="var(--globe-stroke, rgba(16, 185, 129, 0.18))" strokeWidth="1" strokeDasharray="4 4" />
-          <ellipse cx="410" cy="160" rx="140" ry="95" stroke="var(--globe-stroke, rgba(16, 185, 129, 0.18))" strokeWidth="1" strokeDasharray="4 4" />
-          <ellipse cx="410" cy="160" rx="50" ry="140" stroke="var(--globe-stroke, rgba(16, 185, 129, 0.18))" strokeWidth="1" strokeDasharray="4 4" />
-          <ellipse cx="410" cy="160" rx="95" ry="140" stroke="var(--globe-stroke, rgba(16, 185, 129, 0.18))" strokeWidth="1" strokeDasharray="4 4" />
-
-          {/* Holographic globe nodes */}
-          <circle cx="410" cy="65" r="3" fill="#10b981" />
-          <circle cx="475" cy="115" r="3" fill="#10b981" />
-          <circle cx="340" cy="130" r="2.5" fill="#34d399" />
-          <circle cx="445" cy="175" r="3.5" fill="#10b981" filter="url(#neon-glow)" />
-          <circle cx="370" cy="210" r="2.5" fill="#34d399" />
-          <circle cx="510" cy="190" r="3" fill="#10b981" />
-          <circle cx="410" cy="255" r="2.5" fill="#34d399" />
-          <circle cx="310" cy="180" r="3" fill="#10b981" />
-
-          {/* Connecting holographic grid lines */}
-          <path d="M 340 130 L 410 65 L 475 115 L 445 175 L 370 210 Z" stroke="var(--globe-connect, rgba(16, 185, 129, 0.25))" strokeWidth="1" fill="none" />
-          <path d="M 445 175 L 510 190 L 410 255" stroke="var(--globe-connect, rgba(16, 185, 129, 0.22))" strokeWidth="1" fill="none" />
+      {/* faint holographic globe */}
+      <g className="stage-art__globe">
+        <circle cx="436" cy="128" r="112" fill="url(#sa-globe)" />
+        <g stroke="var(--sa-globe-stroke)" strokeWidth="1" strokeDasharray="2 4">
+          <circle cx="436" cy="128" r="112" />
+          <ellipse cx="436" cy="128" rx="112" ry="40" />
+          <ellipse cx="436" cy="128" rx="112" ry="78" />
+          <ellipse cx="436" cy="128" rx="40" ry="112" />
+          <ellipse cx="436" cy="128" rx="78" ry="112" />
         </g>
-
-        {/* High-tech Isometric Ground Circuit Tracks */}
-        <g className="hero__circuits" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          {/* Main primary energy stream sweeping right */}
-          <path
-            d="M 15 365 C 70 345, 120 375, 175 360 C 240 340, 290 390, 365 370 C 430 355, 490 380, 595 320"
-            stroke="url(#circuit-grad-1)"
-            strokeWidth="3"
-            filter="url(#neon-glow)"
-          />
-          {/* Secondary lower track */}
-          <path
-            d="M 50 395 C 110 405, 180 375, 245 400 C 310 425, 385 385, 455 405 C 515 420, 560 380, 615 360"
-            stroke="url(#circuit-grad-2)"
-            strokeWidth="2"
-          />
-          {/* Branch connecting to shield base */}
-          <path
-            d="M 125 320 C 145 345, 175 350, 205 340 C 235 330, 265 345, 290 335"
-            stroke="url(#circuit-grad-1)"
-            strokeWidth="2"
-            strokeDasharray="6 4"
-          />
-          {/* Upward diagonal data stream */}
-          <path
-            d="M 245 400 L 290 335 C 330 305, 375 330, 420 315 L 490 280"
-            stroke="var(--circuit-stream, rgba(16, 185, 129, 0.45))"
-            strokeWidth="1.8"
-          />
-
-          {/* Circuit nodes / luminous pulses */}
-          <g className="hero__circuit-nodes" fill="#10b981">
-            <circle cx="75" cy="358" r="4" filter="url(#neon-glow)" />
-            <circle cx="175" cy="360" r="5" />
-            <circle cx="175" cy="360" r="9" stroke="#10b981" strokeWidth="1.5" opacity="0.4" fill="none" />
-
-            <circle cx="245" cy="400" r="4.5" />
-            <circle cx="290" cy="335" r="4" filter="url(#neon-glow)" />
-
-            <circle cx="365" cy="370" r="5.5" />
-            <circle cx="365" cy="370" r="11" stroke="#34d399" strokeWidth="1.5" opacity="0.35" fill="none" />
-
-            <circle cx="455" cy="405" r="4" />
-            <circle cx="490" cy="280" r="3.5" filter="url(#neon-glow)" />
-            <circle cx="560" cy="340" r="4" />
-          </g>
+        <g stroke="var(--sa-link)" strokeWidth="1">
+          <path d="M437 89L521 151L473 218L423 401" />
+          <path d="M437 89L360 160L400 250" strokeOpacity=".6" />
         </g>
-
-        {/* 3D Isometric Layered Shield Floating at bottom left */}
-        <g className="hero__shield-3d" filter="url(#shield-shadow)">
-          {/* Back Glass Pane (Angled in Isometric Perspective) */}
-          <path
-            d="M 130 160 L 210 205 L 210 325 L 130 280 Z"
-            transform="rotate(6 170 242) skewY(-8)"
-            fill="url(#glass-pane-1)"
-            stroke="#34d399"
-            strokeWidth="2.5"
-            strokeOpacity="0.7"
-          />
-
-          {/* Middle Glass Pane with Neon Edge */}
-          <path
-            d="M 115 175 L 195 220 L 195 335 L 115 290 Z"
-            transform="rotate(3 155 255) skewY(-5)"
-            fill="url(#glass-pane-2)"
-            stroke="#10b981"
-            strokeWidth="2.8"
-            strokeOpacity="0.85"
-            filter="url(#neon-glow)"
-          />
-
-          {/* Front Glossy Shield */}
-          <g transform="matrix(0.96 0 -0.15 0.98 50 20)">
-            {/* Outer Shield Shell */}
-            <path
-              d="M 70 185 Q 120 180, 160 195 C 160 250, 145 295, 70 330 C -5 295, -20 250, -20 195 Q 20 180, 70 185 Z"
-              fill="url(#shield-front-grad)"
-              stroke="url(#shield-bevel)"
-              strokeWidth="4"
-              strokeLinejoin="round"
-            />
-
-            {/* Inner Shield Bevel Rim */}
-            <path
-              d="M 70 197 Q 112 193, 146 206 C 146 250, 133 286, 70 316 C 7 286, -6 250, -6 206 Q 28 193, 70 197 Z"
-              fill="var(--shield-inner, #ffffff)"
-              stroke="var(--shield-inner-stroke, #a7f3d0)"
-              strokeWidth="2"
-              opacity="0.95"
-            />
-
-            {/* TRUVIA Exclamation Emblem inside Shield */}
-            <g transform="translate(70, 245) scale(0.9)">
-              {/* Inverted Triangle Badge */}
-              <path
-                d="M -30 -30 H 30 C 34 -30 36 -26 34 -22 L 4 28 C 2 31 -2 31 -4 28 L -34 -22 C -36 -26 -34 -30 -30 -30 Z"
-                stroke="#10b981"
-                strokeWidth="5"
-                strokeLinejoin="round"
-                strokeLinecap="round"
-                fill="none"
-              />
-              {/* Exclamation Bar */}
-              <line
-                x1="0"
-                y1="-20"
-                x2="0"
-                y2="-3"
-                stroke="#10b981"
-                strokeWidth="4.5"
-                strokeLinecap="round"
-              />
-              {/* Exclamation Dot */}
-              <circle
-                cx="0"
-                cy="9"
-                r="3"
-                fill="#10b981"
-              />
-            </g>
-          </g>
+        <g fill="#1fae5b">
+          <circle cx="437" cy="89" r="3.2" />
+          <circle cx="521" cy="151" r="3" />
+          <circle cx="473" cy="218" r="3.2" />
+          <circle cx="360" cy="160" r="2.2" opacity=".6" />
         </g>
-      </svg>
-    </div>
+        <g stroke="#1fae5b" strokeOpacity=".45">
+          <circle cx="521" cy="151" r="6" />
+          <circle cx="473" cy="218" r="6" />
+        </g>
+      </g>
+
+      {/* thin accent lines */}
+      <path d="M476 30L616 -4" stroke="var(--sa-link)" strokeWidth="1" />
+      <path d="M940 306L1100 232" stroke="#1fae5b" strokeOpacity=".75" strokeWidth="1.4" />
+
+      {/* circuit ribbons */}
+      <g strokeLinecap="round" strokeLinejoin="round">
+        <path
+          d="M-200 520C-90 505 -30 505 58 517C130 528 190 548 260 536C300 528 316 516 326 513C380 506 430 488 520 450"
+          stroke="#1fae5b"
+          strokeOpacity=".35"
+          strokeWidth="9"
+          filter="url(#sa-blur)"
+        />
+        <path
+          d="M-200 520C-90 505 -30 505 58 517C130 528 190 548 260 536C300 528 316 516 326 513C380 506 430 488 520 450"
+          stroke="url(#sa-line)"
+          strokeWidth="2"
+        />
+        <path d="M-200 392C-110 392 -40 396 0 408C30 417 50 428 66 439C85 452 100 470 120 492" stroke="url(#sa-line)" strokeWidth="1.6" />
+        <path d="M62 404V439" stroke="#1fae5b" strokeOpacity=".55" strokeWidth="1.2" />
+        <path d="M318 455C350 446 392 428 423 401" stroke="#1fae5b" strokeOpacity=".65" strokeWidth="1.4" />
+        <path d="M326 513L318 455" stroke="#1fae5b" strokeOpacity=".65" strokeWidth="1.4" />
+        <path d="M168 527C150 548 100 556 40 548" stroke="#1fae5b" strokeOpacity=".5" strokeWidth="1.2" strokeDasharray="4 4" />
+      </g>
+      <g fill="#1fae5b">
+        <circle cx="62" cy="404" r="3" />
+        <circle cx="66" cy="439" r="3.6" />
+        <circle cx="58" cy="517" r="3.6" />
+        <circle cx="318" cy="455" r="3.2" />
+        <circle cx="326" cy="513" r="3.8" />
+        <circle cx="423" cy="401" r="3.4" />
+      </g>
+      <g stroke="#1fae5b" strokeOpacity=".5" strokeWidth="1.2">
+        <circle cx="66" cy="439" r="7.5" />
+        <circle cx="326" cy="513" r="7.5" />
+      </g>
+
+      {/* floating 3D shield */}
+      <g className="stage-art__shield">
+        <ellipse cx="164" cy="540" rx="86" ry="12" fill="#1fae5b" fillOpacity=".4" filter="url(#sa-blur)" />
+
+        {/* glass slabs behind the shield */}
+        <path d="M172 372L238 356L247 480L178 500Z" fill="url(#sa-glass)" stroke="#5fd391" strokeOpacity=".8" strokeWidth="1.4" />
+        <path d="M188 384L244 370L250 470L192 488Z" fill="var(--sa-glass-2)" stroke="#8be6b2" strokeOpacity=".7" strokeWidth="1.2" />
+
+        {/* shield body */}
+        <g filter="url(#sa-shadow)">
+          <path
+            d="M108 404C132 396 196 394 222 404V442C222 492 197 516 166 531C163 532 158 532 155 531C124 516 108 492 108 442Z"
+            fill="url(#sa-rim)"
+          />
+        </g>
+        <path
+          d="M117 413C139 406 191 405 213 413V442C213 485 192 506 164 519C162 520 160 520 158 519C130 506 117 485 117 442Z"
+          fill="url(#sa-face)"
+          stroke="var(--sa-face-stroke)"
+          strokeWidth="1.2"
+        />
+        <path d="M122 418C146 411 184 411 208 418C186 424 150 432 122 450Z" fill="var(--sa-gloss)" />
+
+        {/* TRUVIA mark */}
+        <g transform="translate(163 459)">
+          <path
+            d="M-22 -19H22C25 -19 27 -16 25 -13L3 20C1.5 22 -1.5 22 -3 20L-25 -13C-27 -16 -25 -19 -22 -19Z"
+            stroke="url(#sa-mark)"
+            strokeWidth="7"
+            strokeLinejoin="round"
+          />
+          <path d="M0 -9V2" stroke="#22b862" strokeWidth="4.6" strokeLinecap="round" />
+          <circle cx="0" cy="10" r="2.6" fill="#22b862" />
+        </g>
+      </g>
+    </svg>
   );
 }
 
-/** Two-column marketing + form layout matching the TRUVIA reference design. */
+/** Two-column marketing + form layout, built on a 1024x576 reference canvas. */
 export default function AuthLayout({ children }) {
   return (
     <div className="auth-page">
-      {/* Top Right Controls: Theme Toggle | Language */}
-      <div className="auth-page__tools">
-        <ThemeToggle />
-        <span className="auth-page__tools-divider" aria-hidden="true" />
-        <button
-          type="button"
-          className="icon-btn icon-btn--ghost"
-          aria-label="Language selection"
-          title="Language selection"
-        >
-          <GlobeIcon />
-        </button>
-      </div>
+      <div className="auth-stage">
+        <StageArt />
 
-      {/* Left Column: Hero branding, features, and 3D illustration */}
-      <section className="hero" aria-label="About TRUVIA">
-        <header className="hero__header">
-          <Logo size={42} />
-        </header>
+        <div className="auth-page__tools">
+          <ThemeToggle />
+          <span className="auth-page__tools-divider" aria-hidden="true" />
+          <button type="button" className="icon-btn" aria-label="Language selection" title="Language selection">
+            <GlobeIcon />
+          </button>
+        </div>
 
-        <div className="hero__intro">
+        <section className="hero" aria-label="About TRUVIA">
+          <header className="hero__header">
+            <Logo size={42} className="logo--hero" />
+          </header>
+
           <h2 className="hero__title">
             Intelligence
             <br />
             for a <span className="accent">Safer Tomorrow.</span>
           </h2>
           <p className="hero__sub">AI-powered cybersecurity risk management &amp; compliance platform.</p>
-        </div>
 
-        <ul className="hero__features">
-          {FEATURES.map((f) => (
-            <li key={f.title} className="hero__feature-card">
-              <span className="hero__feature-icon">{f.icon}</span>
-              <span className="hero__feature-label">
-                <span className="hero__feature-title">{f.title}</span>
-                <span className="hero__feature-sub">{f.sub}</span>
-              </span>
-            </li>
-          ))}
-        </ul>
+          <ul className="hero__features">
+            {FEATURES.map((f) => (
+              <li key={f.title} className="hero__feature">
+                <span className="hero__feature-icon">{f.icon}</span>
+                <span className="hero__feature-label">
+                  {f.title}
+                  <br />
+                  {f.sub}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
 
-        <HeroArt />
-      </section>
-
-      {/* Right Column: Floating Auth Card */}
-      <main className="auth-panel">
-        <div className="auth-card">{children}</div>
-      </main>
+        <main className="auth-panel">
+          <div className="auth-card">{children}</div>
+        </main>
+      </div>
     </div>
   );
 }
