@@ -1,0 +1,2991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NextRisk AI (TRUVIA) — Master Sprint Implementation Plan & Roadmap</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
+        @page {
+            size: A4 portrait;
+            margin: 14mm 14mm 14mm 14mm;
+            @bottom-right {
+                content: "Page " counter(page);
+                font-family: 'Plus Jakarta Sans', sans-serif;
+                font-size: 8pt;
+                color: #64748b;
+            }
+            @bottom-left {
+                content: "NextRisk AI — Prepared by Mohamed Shosha";
+                font-family: 'Plus Jakarta Sans', sans-serif;
+                font-size: 8pt;
+                color: #64748b;
+            }
+        }
+
+        @page :first {
+            margin: 0;
+            @bottom-right { content: none; }
+            @bottom-left { content: none; }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: #0f172a;
+            background-color: #ffffff;
+            font-size: 9.5pt;
+            line-height: 1.5;
+        }
+
+        .page-break {
+            page-break-after: always;
+            break-after: page;
+        }
+
+        .page-break-before {
+            page-break-before: always;
+            break-before: page;
+        }
+
+        .no-break {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        /* ================= COVER PAGE ================= */
+        .cover-page {
+            height: 297mm;
+            max-height: 297mm;
+            width: 210mm;
+            box-sizing: border-box;
+            background: linear-gradient(135deg, #090d16 0%, #0f172a 60%, #022c22 100%);
+            color: #ffffff;
+            padding: 30mm 22mm 24mm 22mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            page-break-after: always;
+            break-after: page;
+        }
+
+        .cover-page::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 20% 80%, rgba(2, 132, 199, 0.12) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .cover-brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .brand-shield {
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.4);
+        }
+
+        .brand-shield svg {
+            width: 30px;
+            height: 30px;
+            fill: #ffffff;
+        }
+
+        .brand-titles h1 {
+            font-size: 24pt;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #ffffff;
+            line-height: 1.1;
+        }
+
+        .brand-titles span {
+            font-size: 10pt;
+            color: #34d399;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .cover-hero {
+            margin: 12mm 0;
+        }
+
+        .cover-hero h2 {
+            font-size: 26pt;
+            font-weight: 800;
+            line-height: 1.15;
+            color: #ffffff;
+            margin-bottom: 12px;
+            letter-spacing: -0.8px;
+        }
+
+        .cover-hero h2 span {
+            background: linear-gradient(135deg, #34d399 0%, #38bdf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .cover-hero p {
+            font-size: 11pt;
+            color: #94a3b8;
+            max-width: 650px;
+            line-height: 1.6;
+        }
+
+        .cover-author-card {
+            background: rgba(30, 41, 59, 0.85);
+            border: 1.5px solid rgba(16, 185, 129, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 18px 24px;
+            margin-top: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .author-info h3 {
+            font-size: 16pt;
+            color: #ffffff;
+            font-weight: 700;
+            margin-bottom: 4px;
+            letter-spacing: -0.2px;
+        }
+
+        .author-info p {
+            font-size: 10pt;
+            color: #cbd5e1;
+            margin-bottom: 2px;
+        }
+
+        .author-badge-pill {
+            background: #064e3b;
+            color: #6ee7b7;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 8.5pt;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid #10b981;
+        }
+
+        .cover-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-top: 25px;
+        }
+
+        .cover-stat-box {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 14px 16px;
+        }
+
+        .cover-stat-box .stat-num {
+            font-size: 18pt;
+            font-weight: 800;
+            color: #38bdf8;
+            line-height: 1.2;
+        }
+
+        .cover-stat-box .stat-num.accent {
+            color: #34d399;
+        }
+
+        .cover-stat-box .stat-label {
+            font-size: 8.5pt;
+            color: #94a3b8;
+            font-weight: 600;
+            margin-top: 4px;
+            text-transform: uppercase;
+        }
+
+        .cover-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            padding-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 8.5pt;
+            color: #64748b;
+        }
+
+        /* ================= CONTENT STYLES ================= */
+        .section-header {
+            margin-bottom: 14px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            page-break-after: avoid;
+            break-after: avoid;
+        }
+
+        .section-header h2 {
+            font-size: 16pt;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.3px;
+        }
+
+        .section-header .section-tag {
+            font-size: 8.5pt;
+            font-weight: 700;
+            color: #0284c7;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            background: #e0f2fe;
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        /* Sitemap & Architecture Flow Box */
+        .sitemap-flow {
+            background: #f8fafc;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+        }
+
+        .sitemap-title {
+            font-size: 10pt;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sitemap-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr 1.6fr;
+            gap: 12px;
+        }
+
+        .sitemap-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px 12px;
+            border-top: 3px solid #0284c7;
+        }
+
+        .sitemap-card.gateway { border-top-color: #10b981; }
+        .sitemap-card.app { border-top-color: #8b5cf6; }
+
+        .sitemap-card h5 {
+            font-size: 8.5pt;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .sitemap-card ul {
+            list-style: none;
+            padding: 0;
+            font-size: 7.8pt;
+            color: #334155;
+            line-height: 1.5;
+        }
+
+        .sitemap-card ul li {
+            margin-bottom: 3px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .sitemap-pill {
+            background: #f1f5f9;
+            color: #0284c7;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 7pt;
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        /* Executive Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .metric-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px 14px;
+            border-top: 3.5px solid #0284c7;
+        }
+
+        .metric-card.success { border-top-color: #10b981; }
+        .metric-card.warning { border-top-color: #f59e0b; }
+        .metric-card.purple  { border-top-color: #8b5cf6; }
+
+        .metric-value {
+            font-size: 17pt;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.1;
+        }
+
+        .metric-label {
+            font-size: 8pt;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        .metric-sub {
+            font-size: 7.5pt;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+
+        /* Architecture Card */
+        .arch-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .arch-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        .arch-card h4 {
+            font-size: 10pt;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .arch-card p {
+            font-size: 8pt;
+            color: #475569;
+            line-height: 1.4;
+        }
+
+        .arch-card ul {
+            margin-top: 6px;
+            padding-left: 14px;
+            font-size: 7.8pt;
+            color: #475569;
+        }
+
+        /* Formula Box */
+        .formula-box {
+            background: #f0fdf4;
+            border: 1.5px solid #86efac;
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 18px;
+        }
+
+        .formula-box h4 {
+            font-size: 10.5pt;
+            font-weight: 700;
+            color: #166534;
+            margin-bottom: 4px;
+        }
+
+        .formula-math {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9pt;
+            background: #ffffff;
+            border: 1px solid #bbf7d0;
+            padding: 6px 10px;
+            border-radius: 6px;
+            color: #14532d;
+            font-weight: 600;
+            margin: 4px 0 6px 0;
+            display: inline-block;
+        }
+
+        .formula-desc {
+            font-size: 8pt;
+            color: #15803d;
+            line-height: 1.35;
+        }
+
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 8.5pt;
+            margin-bottom: 12px;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+
+        .data-table th {
+            background: #0f172a;
+            color: #ffffff;
+            font-weight: 700;
+            text-align: left;
+            padding: 7px 8px;
+            font-size: 7.8pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table td {
+            padding: 5px 8px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+            color: #334155;
+            line-height: 1.35;
+        }
+
+        .data-table tr {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        .data-table tr:nth-child(even) td {
+            background-color: #f8fafc;
+        }
+
+        .code-id {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            color: #0f172a;
+            font-size: 7.8pt;
+            white-space: nowrap;
+        }
+
+        .task-title {
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 2px;
+        }
+
+        .task-criteria {
+            font-size: 7.5pt;
+            color: #64748b;
+            line-height: 1.3;
+        }
+
+        .crit-label {
+            font-weight: 700;
+            color: #475569;
+        }
+
+        .dep-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 7.5pt;
+            color: #64748b;
+        }
+
+        .desc-text {
+            font-size: 8pt;
+            color: #475569;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 7pt;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        .badge-done {
+            background-color: #dcfce7;
+            color: #15803d;
+            border: 1px solid #86efac;
+        }
+
+        .badge-partial {
+            background-color: #fef3c7;
+            color: #b45309;
+            border: 1px solid #fcd34d;
+        }
+
+        .badge-planned {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #7dd3fc;
+        }
+
+        .badge-review {
+            background-color: #f3e8ff;
+            color: #7e22ce;
+            border: 1px solid #d8b4fe;
+        }
+
+        /* Priorities */
+        .prio-tag {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 7pt;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .prio-p0 { background: #ffe4e6; color: #be123c; border: 1px solid #fca5a5; }
+        .prio-p1 { background: #ffedd5; color: #c2410c; border: 1px solid #fdba74; }
+        .prio-p2 { background: #fef9c3; color: #a16207; border: 1px solid #fde047; }
+        .prio-p3 { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+
+        /* Subsystem Tags */
+        .subsystem-tag {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 7pt;
+            font-weight: 600;
+        }
+
+        .sub-backend   { background: #eff6ff; color: #1d4ed8; }
+        .sub-frontend  { background: #ecfeff; color: #0e7490; }
+        .sub-database  { background: #fff7ed; color: #c2410c; }
+        .sub-security  { background: #f5f3ff; color: #6d28d9; }
+        .sub-devops    { background: #f0fdf4; color: #15803d; }
+        .sub-qa        { background: #fdf2f8; color: #be185d; }
+        .sub-fullstack { background: #faf5ff; color: #7e22ce; }
+
+        .effort-tag {
+            font-weight: 700;
+            color: #475569;
+            font-size: 7.5pt;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .persona-tag {
+            background: #f1f5f9;
+            color: #334155;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 7.5pt;
+            font-weight: 600;
+        }
+
+        /* Phase Block */
+        .phase-block {
+            margin-bottom: 20px;
+        }
+
+        .phase-header {
+            background: #f8fafc;
+            border-left: 5px solid #0f172a;
+            border-radius: 0 8px 8px 0;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            border-top: 1px solid #e2e8f0;
+            border-right: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            page-break-after: avoid;
+            break-after: avoid;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        .phase-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+
+        .sprint-tag {
+            font-size: 8pt;
+            font-weight: 700;
+            color: #0284c7;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .phase-header h2 {
+            font-size: 13pt;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.2px;
+            margin-bottom: 4px;
+        }
+
+        .phase-objective {
+            font-size: 8.5pt;
+            color: #475569;
+            line-height: 1.4;
+        }
+
+        /* What Platform Delivers / Outputs Box */
+        .sprint-output-box {
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
+            border-top: 3px solid #0f172a;
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-top: 6px;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        .sprint-output-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px;
+        }
+
+        .output-icon {
+            font-size: 10pt;
+        }
+
+        .sprint-output-header h4 {
+            font-size: 9pt;
+            font-weight: 800;
+            color: #0f172a;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .output-summary {
+            font-size: 8pt;
+            color: #334155;
+            line-height: 1.35;
+            margin-bottom: 6px;
+            background: #f8fafc;
+            padding: 5px 8px;
+            border-radius: 6px;
+            border-left: 3px solid #38bdf8;
+        }
+
+        .output-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1.2fr 1.1fr;
+            gap: 8px;
+        }
+
+        .output-col {
+            background: #fafafa;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 6px 8px;
+        }
+
+        .output-col-title {
+            font-size: 7.5pt;
+            font-weight: 700;
+            color: #0f172a;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 3px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 2px;
+        }
+
+        .output-col ul {
+            padding-left: 12px;
+            font-size: 7.5pt;
+            color: #475569;
+            line-height: 1.3;
+        }
+
+        .output-col ul li {
+            margin-bottom: 1px;
+        }
+
+        .output-impact-text {
+            font-size: 7.5pt;
+            color: #1e293b;
+            line-height: 1.35;
+            font-weight: 500;
+        }
+
+        /* Sign-off Block */
+        .signoff-box {
+            background: #ffffff;
+            border: 2px solid #0f172a;
+            border-radius: 12px;
+            padding: 18px 22px;
+            margin-top: 25px;
+            page-break-inside: avoid;
+        }
+
+        .signoff-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 16px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .signoff-item h5 {
+            font-size: 8pt;
+            text-transform: uppercase;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+
+        .signoff-item p {
+            font-size: 10pt;
+            font-weight: 700;
+            color: #0f172a;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ================= COVER PAGE ================= -->
+    <div class="cover-page">
+        <div>
+            <div class="cover-brand">
+                <div class="brand-shield">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+                </div>
+                <div class="brand-titles">
+                    <h1>NEXTRISK AI</h1>
+                    <span>Enterprise Cybersecurity Platform (TRUVIA)</span>
+                </div>
+            </div>
+
+            <div class="cover-hero">
+                <h2>Master Sprint Implementation Plan &amp; <span>Architecture Roadmap</span></h2>
+                <p>A unified blueprint bridging Public Web Presence (Home, Solutions, Pricing, About, Contact) and Enterprise Cyber Operations (GRC, SOC, Penetration Testing &amp; Predictive AI Decision Models).</p>
+            </div>
+        </div>
+
+        <div>
+            <!-- Author Attribution Card (English Only) -->
+            <div class="cover-author-card">
+                <div class="author-info">
+                    <div style="font-size: 8.5pt; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; font-weight: 700; margin-bottom: 2px;">Project Architect &amp; Engineering Lead</div>
+                    <h3>Mohamed Shosha</h3>
+                    <p>Lead Technical Architect &amp; Systems Engineer</p>
+                    <p style="font-size: 8.5pt; color: #94a3b8;">Document Version: 2.0.0 &bull; Classification: Enterprise Confidential</p>
+                </div>
+                <div>
+                    <span class="author-badge-pill">Master Roadmap</span>
+                </div>
+            </div>
+
+            <div class="cover-stats-grid">
+                <div class="cover-stat-box">
+                    <div class="stat-num accent">96 Tasks</div>
+                    <div class="stat-label">Granular Scope</div>
+                </div>
+                <div class="cover-stat-box">
+                    <div class="stat-num">10 Sprints</div>
+                    <div class="stat-label">Phases 0 to 9</div>
+                </div>
+                <div class="cover-stat-box">
+                    <div class="stat-num accent">19 FRs</div>
+                    <div class="stat-label">Public + App</div>
+                </div>
+                <div class="cover-stat-box">
+                    <div class="stat-num">31% Verified</div>
+                    <div class="stat-label">74 Tests Passing</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cover-footer">
+            <span>&copy; 2026 NextRisk AI Project &bull; Mohamed Shosha</span>
+            <span>Stack: Spring Boot 3.3.5 &bull; React 18 &bull; MySQL 8 &bull; Spring AI &bull; Docker</span>
+        </div>
+    </div>
+
+    <!-- ================= PAGE 2: EXECUTIVE SUMMARY & SITEMAP ARCHITECTURE ================= -->
+    <div class="page-break">
+        <div class="section-header">
+            <div>
+                <h2>1. Executive Summary &amp; Platform Sitemap Architecture</h2>
+                <p style="color: #64748b; font-size: 8.5pt;">Complete mapping of the Public Marketing Website, Authentication Gateway, and Core Cyber Application</p>
+            </div>
+            <span class="section-tag">Platform Overview</span>
+        </div>
+
+        <!-- Sitemap Flowchart Card -->
+        <div class="sitemap-flow">
+            <div class="sitemap-title">
+                🌐 Complete Platform Sitemap &amp; User Navigation Architecture
+            </div>
+            <div class="sitemap-grid">
+                <div class="sitemap-card">
+                    <h5>1. Public Website (Visitors)</h5>
+                    <ul>
+                        <li><span class="sitemap-pill">/</span> <strong>Home Page</strong> (Hero, Solutions, Risk Widget)</li>
+                        <li><span class="sitemap-pill">/services</span> <strong>Services &amp; Solutions</strong> (GRC, SOC, AI)</li>
+                        <li><span class="sitemap-pill">/pricing</span> <strong>Pricing Plans</strong> (Tiers &amp; Comparison)</li>
+                        <li><span class="sitemap-pill">/about</span> <strong>About Us</strong> (Mission &amp; Leadership)</li>
+                        <li><span class="sitemap-pill">/contact</span> <strong>Contact Us</strong> (Inquiry &amp; FAQ)</li>
+                        <li><span class="sitemap-pill">Modal</span> <strong>Book a Demo</strong> (Calendar scheduler)</li>
+                    </ul>
+                </div>
+                <div class="sitemap-card gateway">
+                    <h5>2. Auth Gateway</h5>
+                    <ul>
+                        <li><span class="sitemap-pill">/login</span> <strong>User Login</strong> (JWT &amp; Cookie)</li>
+                        <li><span class="sitemap-pill">/register</span> <strong>Registration</strong> (Validation)</li>
+                        <li><span class="sitemap-pill">/profile</span> <strong>User Profile</strong> (Active sessions)</li>
+                        <li><span class="sitemap-pill">/admin</span> <strong>Admin Probe</strong> (RBAC verify)</li>
+                        <li><span class="sitemap-pill">/403</span> <strong>Forbidden Page</strong></li>
+                        <li><span class="sitemap-pill">/404</span> <strong>Not Found Page</strong></li>
+                    </ul>
+                </div>
+                <div class="sitemap-card app">
+                    <h5>3. Enterprise Cyber Workspace (Protected)</h5>
+                    <ul>
+                        <li><span class="sitemap-pill">/dashboard</span> <strong>Executive CISO View</strong> (Exposure &amp; Posture)</li>
+                        <li><span class="sitemap-pill">/dashboard/soc</span> <strong>SOC Live Telemetry</strong> (Alert stream &amp; MTTR)</li>
+                        <li><span class="sitemap-pill">/assets</span> <strong>Asset Inventory</strong> (Classification &amp; Criticality)</li>
+                        <li><span class="sitemap-pill">/vulnerabilities</span> <strong>Vulnerability Explorer</strong> (Pentest ingestion)</li>
+                        <li><span class="sitemap-pill">/risks</span> <strong>Central Risk Register</strong> (5x5 Live Heatmap)</li>
+                        <li><span class="sitemap-pill">/compliance</span> <strong>Frameworks &amp; Controls</strong> (ISO 27001, NIST)</li>
+                        <li><span class="sitemap-pill">/policies</span> <strong>Policy Repository</strong> (Versioning &amp; Approval)</li>
+                        <li><span class="sitemap-pill">/incidents</span> <strong>Incident Response</strong> (Kanban &amp; SLA timers)</li>
+                        <li><span class="sitemap-pill">/ai-assistant</span> <strong>NextRisk AI Copilot</strong> (Remediation playbooks)</li>
+                        <li><span class="sitemap-pill">/reports</span> <strong>Board Reports</strong> (PDF / CSV export)</li>
+                        <li><span class="sitemap-pill">/audit</span> <strong>Immutable Audit Trail</strong> (Activity logging)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="metrics-grid">
+            <div class="metric-card success">
+                <div class="metric-value">26 Tasks</div>
+                <div class="metric-label">Completed &amp; Verified</div>
+                <div class="metric-sub">Phases 0 &amp; 1 Fully Operational</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">70 Tasks</div>
+                <div class="metric-label">Remaining Sprints</div>
+                <div class="metric-sub">Phases 2 through 9 Roadmap</div>
+            </div>
+            <div class="metric-card warning">
+                <div class="metric-value">Sprint 2</div>
+                <div class="metric-label">Immediate Milestone</div>
+                <div class="metric-sub">Public Website (Home, Services, Contact)</div>
+            </div>
+            <div class="metric-card purple">
+                <div class="metric-value">74 Tests</div>
+                <div class="metric-label">Automated Green Tests</div>
+                <div class="metric-sub">38 Backend / 36 Frontend</div>
+            </div>
+        </div>
+
+        <!-- Dynamic Risk Scoring Blueprint -->
+        <div class="formula-box">
+            <h4>NextRisk AI Dynamic Algorithmic Scoring Blueprint</h4>
+            <div class="formula-math">
+                Live Risk Score = [ (Asset Criticality &times; 0.35) + (CVSS v3 Base &times; 0.35) + (Threat Likelihood &times; 0.20) ] &times; (1 - Control Effectiveness &times; 0.70)
+            </div>
+            <p class="formula-desc">
+                The core engine recalculates live risk scores whenever an asset tier, linked vulnerability, or compensating control is updated. The score is normalized from <strong>1 to 100</strong> and projected into financial exposure using the <strong>FAIR (Factor Analysis of Information Risk)</strong> model: <code>ALE = SLE &times; ARO</code> ($ USD).
+            </p>
+        </div>
+    </div>
+
+    <!-- ================= PAGE 3: FUNCTIONAL REQUIREMENTS MATRIX ================= -->
+    <div class="page-break">
+        <div class="section-header">
+            <div>
+                <h2>2. Functional Requirements (FR) Traceability Matrix</h2>
+                <p style="color: #64748b; font-size: 8.5pt;">Complete mapping of core platform capabilities (FR-WEB-01..05 and FR-01..14) to project personas and execution sprints.</p>
+            </div>
+            <span class="section-tag">Requirements Matrix</span>
+        </div>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 10%;">ID</th>
+                    <th style="width: 25%;">Requirement Name</th>
+                    <th style="width: 17%;">Target Persona</th>
+                    <th style="width: 14%;">Target Sprint</th>
+                    <th style="width: 12%;">Status</th>
+                    <th style="width: 22%;">Architectural Scope &amp; Deliverables</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td class="code-id">FR-WEB-01</td>
+            <td><strong>Public Home & Landing Page</strong></td>
+            <td><span class="persona-tag">Visitors / Prospects / All Users</span></td>
+            <td>Phase 2 (Sprint 2)</td>
+            <td><span class="badge badge-planned">PLANNED</span></td>
+            <td class="desc-text">Modern public landing page with Hero section, security solutions overview, interactive risk simulator widget, live statistics, and registration CTAs.</td>
+        </tr>
+        
+        <tr>
+            <td class="code-id">FR-WEB-02</td>
+            <td><strong>Services & Solutions Showcase Page</strong></td>
+            <td><span class="persona-tag">Prospects / CISOs / Auditors</span></td>
+            <td>Phase 2 (Sprint 2)</td>
+            <td><span class="badge badge-planned">PLANNED</span></td>
+            <td class="desc-text">Detailed public showcase of platform capabilities: GRC Automation, SOC Live Monitoring, Pentest Finding Linking, and AI-Powered Remediation.</td>
+        </tr>
+        
+        <tr>
+            <td class="code-id">FR-WEB-03</td>
+            <td><strong>About Us & Architecture Page</strong></td>
+            <td><span class="persona-tag">Visitors / Evaluators / Investors</span></td>
+            <td>Phase 2 (Sprint 2)</td>
+            <td><span class="badge badge-planned">PLANNED</span></td>
+            <td class="desc-text">Company vision, cyber mission statement, technology stack overview (Spring Boot 3, React 18, MySQL 8, Spring AI), and engineering leadership.</td>
+        </tr>
+        
+        <tr>
+            <td class="code-id">FR-WEB-04</td>
+            <td><strong>Contact Us & Demo Request Portal</strong></td>
+            <td><span class="persona-tag">Clients / Prospective Users</span></td>
+            <td>Phase 2 (Sprint 2)</td>
+            <td><span class="badge badge-planned">PLANNED</span></td>
+            <td class="desc-text">Interactive contact page with inquiry form, Book a Live Demo calendar scheduler, support contact channels, and interactive FAQ accordion.</td>
+        </tr>
+        
+        <tr>
+            <td class="code-id">FR-WEB-05</td>
+            <td><strong>Pricing & Subscription Plans Page</strong></td>
+            <td><span class="persona-tag">Prospective Clients / Buyers</span></td>
+            <td>Phase 2 (Sprint 2)</td>
+            <td><span class="badge badge-planned">PLANNED</span></td>
+            <td class="desc-text">Transparent pricing tiers (Community, Professional, Enterprise) with monthly/annual billing toggle and full feature comparison matrix.</td>
+        </tr>
+        
+        <tr>
+            <td class="code-id">FR-01</td>
+            <td><strong>Secure User Registration & Authentication</strong></td>
+            <td><span class="persona-tag">All Users / Security Admin</span></td>
+            <td>Phase 1 (Sprint 1)</td>
+            <td><span class="badge badge-done">DONE — VERIFIED</span></td>
+            <td class="desc-text">Stateless JWT access tokens with rotating opaque refresh tokens, BCrypt hashing, HttpOnly SameSite=Strict cookies, and auto session restore.</td>
+        </tr>
+        
+        <tr>
+            <td class="code-id">FR-02</td>
+            <td><strong>Centralized Risk Register</strong></td>
+            <td><span class="persona-tag">GRC Analyst / CISO</span></td>
+            <td>Phase 4 (Sprint 4)</td>
+            <td><span class="badge badge-planned">PLANNED</span></td>
+            <td class="desc-text">Single source of truth for cybersecurity risks: CRUD lifecycle, categorization, owner assignments, and risk treatment workflows.</td>
+        </tr>
+        
+        <tr>
+            <td class="code-id">FR-03</td>
+            <td><strong>Dynamic Live Risk Scoring Engine</strong></td>
+            <td><span class="persona-tag">GRC Analyst / SOC</span></td>
+            <td>Phase 4 (Sprint 4)</td>
+            <td><span class="badge badge-planned">PLANNED</span></td>
+            <td class="desc-text">Algorithmic live scoring combining asset criticality, CVSS v3 findings, threat likelihood, and compensating control effectiveness into a normalized 1–100 score.</td>
+        </tr>
+        
+        <tr>
+            <td class="code-id">FR-04</td>
+            <td><strong>AI Risk Prediction & Intelligent Remediation</strong></td>
+            <td><span class="persona-tag">Security Engineer / CISO</span></td>
+            <td>Phase 7 (Sprint 7)</td>
+            <td><span class="badge badge-planned">PLANNED</span></td>
+            <td class="desc-text">Spring AI / LLM pipeline predicting probable attack paths from asset CVE telemetry and generating step-by-step remediation playbooks.</td>
+        </tr>
+        
+        <tr>
+            <td class="code-id">FR-05</td>
+            <td><strong>Compliance Management & Controls</strong></td>
+            <td><span class="persona-tag">Compliance Officer / GRC</span></td>
+            <td>Phase 5 (Sprint 5)</td>
+            <td><span class="badge badge-planned">PLANNED</span></td>
+            <td class="desc-text">Multi-framework baseline compliance tracking for ISO/IEC 27001:2022, NIST CSF 2.0, and SOC 2 Type II with audit evidence tracking.</td>
+        </tr>
+        
+        <tr>
+            <td class="code-id">FR-06</td>
+            <td><strong>Security Policy Management & Versioning</strong></td>
+            <td><span class="persona-tag">GRC Analyst / Auditor</span></td>
+            <td>Phase 5 (Sprint 5)</td>
+            <td><span class="badge badge-planned">PLANNED</span></td>
+            <td class="desc-text">Repository of internal security policies with document versioning, approval workflows (Draft -> Review -> Approved), and markdown preview.</td>
+        </tr>
+        
+        <tr>
+            <td class="code-id">FR-07</td>
+            <td><strong>Vulnerability Reports & Pentest Ingestion</strong></td>
+            <td><span class="persona-tag">Penetration Tester / SOC</span></td>
+            <td>Phase 3 (Sprint 3)</td>
+            <td><span class="badge badge-planned">PLANNED</span></td>
+            <td class="desc-text">Automated ingestion and manual logging of vulnerability findings with CVSS v3 scoring parser and direct linking to affected business assets.</td>
+        </tr>
+        
+        <tr>
+            <td class="code-id">FR-08</td>
+            <td><strong>Asset Inventory & Criticality Classification</strong></td>
+            <td><span class="persona-tag">SOC Engineer / IT Admin</span></td>
+            <td>Phase 3 (Sprint 3)</td>
+            <td><span class="badge badge-planned">PLANNED</span></td>
+            <td class="desc-text">Comprehensive asset catalog (Servers, Cloud, Web Apps, Databases) with classification tiering, data sensitivity, and business criticality weighting.</td>
+        </tr>
+        
+        <tr>
+            <td class="code-id">FR-09</td>
+            <td><strong>Executive & Security Operations Dashboards</strong></td>
+            <td><span class="persona-tag">CISO / SOC Analyst</span></td>
+            <td>Phase 8 (Sprint 8)</td>
+            <td><span class="badge badge-planned">PLANNED</span></td>
+            <td class="desc-text">Dual-view dashboards: Executive CISO high-level view (financial exposure, compliance posture, top risks) and SOC live technical feed (open alerts, incident stream).</td>
+        </tr>
+        
+        <tr>
+            <td class="code-id">FR-10</td>
+            <td><strong>Security Incident Management & Response</strong></td>
+            <td><span class="persona-tag">SOC Analyst / Incident Lead</span></td>
+            <td>Phase 6 (Sprint 6)</td>
+            <td><span class="badge badge-planned">PLANNED</span></td>
+            <td class="desc-text">End-to-end incident lifecycle state machine (Reported -> Triaged -> Containment -> Resolved) with SLA timers and containment audit log.</td>
+        </tr>
+        
+        <tr>
+            <td class="code-id">FR-11</td>
+            <td><strong>Risk Prioritization Matrix & Heatmap</strong></td>
+            <td><span class="persona-tag">GRC Analyst / Executive</span></td>
+            <td>Phase 4 (Sprint 4)</td>
+            <td><span class="badge badge-planned">PLANNED</span></td>
+            <td class="desc-text">Interactive 5x5 dynamic risk heatmap (Likelihood vs. Impact) with drill-down capability and Business Impact Analysis (BIA) weighting.</td>
+        </tr>
+        
+        <tr>
+            <td class="code-id">FR-12</td>
+            <td><strong>Role-Based Access Control (RBAC)</strong></td>
+            <td><span class="persona-tag">Security Admin</span></td>
+            <td>Phase 1 (Sprint 1)</td>
+            <td><span class="badge badge-done">DONE — VERIFIED</span></td>
+            <td class="desc-text">Granular authorization with 5 seeded enterprise roles: ROLE_ADMIN, ROLE_CISO, ROLE_GRC_ANALYST, ROLE_SOC_ANALYST, ROLE_PENTESTER.</td>
+        </tr>
+        
+        <tr>
+            <td class="code-id">FR-13</td>
+            <td><strong>Notifications & Real-Time Alerts</strong></td>
+            <td><span class="persona-tag">SOC Analyst / GRC Analyst</span></td>
+            <td>Phase 6 (Sprint 6)</td>
+            <td><span class="badge badge-planned">PLANNED</span></td>
+            <td class="desc-text">In-app alert notification center with threshold triggers for high-risk breaches, SLA violations, and new critical vulnerability disclosures.</td>
+        </tr>
+        
+        <tr>
+            <td class="code-id">FR-14</td>
+            <td><strong>Automated Executive & Compliance Reporting</strong></td>
+            <td><span class="persona-tag">CISO / Compliance Auditor</span></td>
+            <td>Phase 8 (Sprint 8)</td>
+            <td><span class="badge badge-planned">PLANNED</span></td>
+            <td class="desc-text">Automated generation and export of board-ready PDF executive summaries, compliance audit matrices, and CSV raw data exports.</td>
+        </tr>
+        
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ================= PAGES 4+: MASTER SPRINT ROADMAP ================= -->
+    <div class="section-header">
+        <div>
+            <h2>3. Master Sprint Execution Roadmap &amp; Task Backlog</h2>
+            <p style="color: #64748b; font-size: 8.5pt;">Granular engineering breakdown of all 96 project tasks across Phases 0 through 9 with explicit platform capabilities &amp; deliverables.</p>
+        </div>
+        <span class="section-tag">96 Detailed Tasks</span>
+    </div>
+
+    
+        <div class="phase-block ">
+            <div class="phase-header" style="border-left-color: #059669;">
+                <div class="phase-meta">
+                    <span class="sprint-tag">Sprint 0 (Foundation)</span>
+                    <span class="badge badge-done">100% COMPLETE & VERIFIED</span>
+                </div>
+                <h2>Phase 0: Monorepo & Environment Initialization</h2>
+                <p class="phase-objective"><strong>Milestone Goal:</strong> Establish containerized development environment, multi-tier project scaffolding, MySQL 8 with persistent volumes, and healthcheck orchestration.</p>
+            </div>
+            
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 12%;">Task ID</th>
+                        <th style="width: 36%;">Task Title & Acceptance Criteria</th>
+                        <th style="width: 12%;">Subsystem</th>
+                        <th style="width: 7%;">Prio</th>
+                        <th style="width: 6%;">Effort</th>
+                        <th style="width: 15%;">Status</th>
+                        <th style="width: 12%;">Dependencies</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+            <tr>
+                <td class="code-id">INFRA-001</td>
+                <td>
+                    <div class="task-title">Repository Architecture Scaffolding</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Created monorepo layout (backend/, frontend/, docker/, docs/).</div>
+                </td>
+                <td><span class="subsystem-tag sub-devops">DevOps</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">S</span></td>
+                <td><span class="badge badge-done">DONE</span></td>
+                <td class="dep-text">None</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">INFRA-002</td>
+                <td>
+                    <div class="task-title">MySQL 8 Containerization with Healthcheck</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Configured MySQL 8.0 container with mysqladmin ping healthcheck and persistent volumes.</div>
+                </td>
+                <td><span class="subsystem-tag sub-database">Database</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">S</span></td>
+                <td><span class="badge badge-done">DONE</span></td>
+                <td class="dep-text">INFRA-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">INFRA-003</td>
+                <td>
+                    <div class="task-title">Spring Boot 3.3.5 Backend Scaffolding</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Configured Java 21 / Maven project with Web, JPA, Security, Lombok, and Flyway dependencies.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-done">DONE</span></td>
+                <td class="dep-text">INFRA-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">INFRA-004</td>
+                <td>
+                    <div class="task-title">React 18 / Vite 5.4 Frontend Scaffolding</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Initialized modern React 18 SPA with Vite, React Router 6, Vitest, and testing library.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-done">DONE</span></td>
+                <td class="dep-text">INFRA-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">INFRA-005</td>
+                <td>
+                    <div class="task-title">Full-Stack Docker Compose Orchestration</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Docker Compose wiring db:3306, backend:8080, and frontend:5173 with automatic service dependency.</div>
+                </td>
+                <td><span class="subsystem-tag sub-devops">DevOps</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-done">DONE</span></td>
+                <td class="dep-text">INFRA-002..004</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">INFRA-006</td>
+                <td>
+                    <div class="task-title">Environment Templates & Validation</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Established .env.example templates and isolated secrets from version control.</div>
+                </td>
+                <td><span class="subsystem-tag sub-security">Security</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">S</span></td>
+                <td><span class="badge badge-done">DONE</span></td>
+                <td class="dep-text">None</td>
+            </tr>
+            
+                </tbody>
+            </table>
+
+            <!-- What the Platform Delivers & Outputs After this Sprint -->
+            <div class="sprint-output-box no-break">
+                <div class="sprint-output-header">
+                    <span class="output-icon">🎯</span>
+                    <h4>What The Platform Delivers &amp; Outputs After Sprint 0 (Foundation)</h4>
+                </div>
+                <p class="output-summary">At the conclusion of Sprint 0, the site provides a fully automated, containerized local hosting environment where frontend, backend, and database interact seamlessly via Docker Compose.</p>
+                <div class="output-grid">
+                    <div class="output-col">
+                        <div class="output-col-title">🖥️ User Interface &amp; Pages</div>
+                        <ul>
+                            <li>Vite 5.4 dev server running at http://localhost:5173 with hot module reloading</li><li>App shell baseline with route placeholders and automated Vitest suite (36 tests passing)</li><li>Nginx reverse proxy container ready for production artifact bundling</li>
+                        </ul>
+                    </div>
+                    <div class="output-col">
+                        <div class="output-col-title">⚙️ Backend Engines &amp; APIs</div>
+                        <ul>
+                            <li>Spring Boot 3.3.5 REST API running at http://localhost:8080 with Hikari connection pool</li><li>MySQL 8.0 container running on ports 3306/3307 with automated mysqladmin healthchecks</li><li>Flyway migration pipeline initialized and validating schema on startup</li>
+                        </ul>
+                    </div>
+                    <div class="output-col">
+                        <div class="output-col-title">💼 Milestone Business Impact</div>
+                        <p class="output-impact-text">Zero-friction developer onboarding: any engineer can launch the entire platform stack locally with a single command (docker compose up) without manual database or environment setup.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="phase-block page-break-before">
+            <div class="phase-header" style="border-left-color: #10b981;">
+                <div class="phase-meta">
+                    <span class="sprint-tag">Sprint 1 (Security MVP)</span>
+                    <span class="badge badge-done">87% VERIFIED (20/23 DONE)</span>
+                </div>
+                <h2>Phase 1: Security Core, Authentication & RBAC MVP</h2>
+                <p class="phase-objective"><strong>Milestone Goal:</strong> Implement production-grade stateless JWT authentication, rotating opaque refresh tokens with theft-detection family revocation, Spring Security 6 filter chain, 5 RBAC roles, and modern React auth UI.</p>
+            </div>
+            
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 12%;">Task ID</th>
+                        <th style="width: 36%;">Task Title & Acceptance Criteria</th>
+                        <th style="width: 12%;">Subsystem</th>
+                        <th style="width: 7%;">Prio</th>
+                        <th style="width: 6%;">Effort</th>
+                        <th style="width: 15%;">Status</th>
+                        <th style="width: 12%;">Dependencies</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+            <tr>
+                <td class="code-id">DB-001</td>
+                <td>
+                    <div class="task-title">Flyway V1 & V2: Roles and Schema Seeding</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> V1 base schema and V2 seed script for 5 enterprise RBAC roles.</div>
+                </td>
+                <td><span class="subsystem-tag sub-database">Database</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">S</span></td>
+                <td><span class="badge badge-done">DONE</span></td>
+                <td class="dep-text">INFRA-002</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">DB-002</td>
+                <td>
+                    <div class="task-title">Flyway V1: Users & User-Roles Tables</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Established users, roles, and user_roles junction tables with unique constraints.</div>
+                </td>
+                <td><span class="subsystem-tag sub-database">Database</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">S</span></td>
+                <td><span class="badge badge-done">DONE</span></td>
+                <td class="dep-text">DB-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">DB-003</td>
+                <td>
+                    <div class="task-title">Flyway V3: Refresh Tokens & Family Chain</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Created refresh_tokens table with token_hash, family_id, replaced_by, and revoked_at.</div>
+                </td>
+                <td><span class="subsystem-tag sub-database">Database</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">S</span></td>
+                <td><span class="badge badge-done">DONE</span></td>
+                <td class="dep-text">DB-002</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-AUTH-001</td>
+                <td>
+                    <div class="task-title">User Self-Registration Endpoint</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> POST /api/auth/register with BCrypt 10 password hashing and default role assignment.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-done">DONE</span></td>
+                <td class="dep-text">DB-002</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-AUTH-002</td>
+                <td>
+                    <div class="task-title">User Login & Authentication Manager</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> POST /api/auth/login validating credentials and returning short-lived JWT access token.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-done">DONE</span></td>
+                <td class="dep-text">DB-002</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-AUTH-003</td>
+                <td>
+                    <div class="task-title">Stateless JWT Issuance & Nimbus Validation</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> 15-minute HS256 JWT access tokens containing user ID, username, and role authorities.</div>
+                </td>
+                <td><span class="subsystem-tag sub-security">Security</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-done">DONE</span></td>
+                <td class="dep-text">BE-AUTH-002</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-AUTH-004</td>
+                <td>
+                    <div class="task-title">Opaque Refresh Token Rotation & Theft Detection</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> POST /api/auth/refresh rotating single-use refresh tokens; revokes entire family on replay.</div>
+                </td>
+                <td><span class="subsystem-tag sub-security">Security</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-done">DONE</span></td>
+                <td class="dep-text">DB-003</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-AUTH-005</td>
+                <td>
+                    <div class="task-title">Server-Side Logout & Family Revocation</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> POST /api/auth/logout revoking active refresh token family and clearing HttpOnly cookie.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">S</span></td>
+                <td><span class="badge badge-done">DONE</span></td>
+                <td class="dep-text">BE-AUTH-004</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-AUTH-006</td>
+                <td>
+                    <div class="task-title">Current User Profile Endpoint (/api/auth/me)</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> GET /api/auth/me returning authenticated user identity, email, and granted authorities.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">S</span></td>
+                <td><span class="badge badge-done">DONE</span></td>
+                <td class="dep-text">BE-AUTH-003</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-AUTH-007</td>
+                <td>
+                    <div class="task-title">Spring Security 6 Stateless Filter Chain & CORS</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Stateless session creation, custom JwtAuthenticationFilter, and explicit CORS config.</div>
+                </td>
+                <td><span class="subsystem-tag sub-security">Security</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-done">DONE</span></td>
+                <td class="dep-text">BE-AUTH-003</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-AUTH-008</td>
+                <td>
+                    <div class="task-title">RBAC Enforcement & Admin Probe (/api/admin/ping)</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> @PreAuthorize('hasRole("ADMIN")') probe returning 200 OK for admin and 403 Forbidden for non-admin.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">S</span></td>
+                <td><span class="badge badge-done">DONE</span></td>
+                <td class="dep-text">BE-AUTH-007</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-AUTH-009</td>
+                <td>
+                    <div class="task-title">Safe Bootstrap Admin Provisioning Engine</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Startup runner provisioning default system administrator with deterministic role wiring.</div>
+                </td>
+                <td><span class="subsystem-tag sub-security">Security</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">S</span></td>
+                <td><span class="badge badge-done">DONE</span></td>
+                <td class="dep-text">BE-AUTH-002</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-AUTH-010</td>
+                <td>
+                    <div class="task-title">Automated Scheduled Expired Token Purging</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Purge method implemented in RefreshTokenService; requires @Scheduled cron activation.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p2">P2</span></td>
+                <td><span class="effort-tag">S</span></td>
+                <td><span class="badge badge-partial">PARTIAL</span></td>
+                <td class="dep-text">BE-AUTH-004</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-AUTH-001</td>
+                <td>
+                    <div class="task-title">Login Page & Form Validation</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> React login screen with real-time field validation, error banners, and loading state.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-done">DONE</span></td>
+                <td class="dep-text">INFRA-004</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-AUTH-002</td>
+                <td>
+                    <div class="task-title">Register Page & Form Validation</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> React registration screen with password confirmation, complexity checks, and redirect.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-done">DONE</span></td>
+                <td class="dep-text">INFRA-004</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-AUTH-003</td>
+                <td>
+                    <div class="task-title">Axios Client, Interceptors & Single-Flight Refresh</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Axios interceptor catching 401, queuing concurrent requests, and executing single refresh.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-done">DONE</span></td>
+                <td class="dep-text">FE-AUTH-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-AUTH-004</td>
+                <td>
+                    <div class="task-title">AuthContext Lifecycle & Auto Session Restore</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Context keeping token in memory, restoring session on reload via silent refresh.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-done">DONE</span></td>
+                <td class="dep-text">FE-AUTH-003</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-AUTH-005</td>
+                <td>
+                    <div class="task-title">Protected Route Guards & Role-Based Access</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> ProtectedRoute redirecting unauthenticated users to /login and unauthorized to /403.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">S</span></td>
+                <td><span class="badge badge-done">DONE</span></td>
+                <td class="dep-text">FE-AUTH-004</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-AUTH-006</td>
+                <td>
+                    <div class="task-title">User Profile Page (/profile)</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> User profile screen showing account metadata, role badges, and active session status.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">S</span></td>
+                <td><span class="badge badge-done">DONE</span></td>
+                <td class="dep-text">FE-AUTH-005</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-AUTH-007</td>
+                <td>
+                    <div class="task-title">Admin Access Verification Page (/admin)</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Admin verification dashboard probing /api/admin/ping and displaying RBAC status.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">S</span></td>
+                <td><span class="badge badge-done">DONE</span></td>
+                <td class="dep-text">FE-AUTH-005</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-AUTH-008</td>
+                <td>
+                    <div class="task-title">Responsive AppShell & Role-Aware Navigation</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Navigation sidebar and top header dynamically showing navigation links per role.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-done">DONE</span></td>
+                <td class="dep-text">FE-AUTH-005</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-AUTH-009</td>
+                <td>
+                    <div class="task-title">Self-Service Password Reset Workflow</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Email token verification and self-service password recovery flow.</div>
+                </td>
+                <td><span class="subsystem-tag sub-fullstack">Full-Stack</span></td>
+                <td><span class="prio-tag prio-p2">P2</span></td>
+                <td><span class="effort-tag">L</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-AUTH-002</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-AUTH-010</td>
+                <td>
+                    <div class="task-title">Auth Portal Visual Polish / Redesign Realignment</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Visual alignment with high-fidelity corporate reference mockups.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p2">P2</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-review">REVIEW</span></td>
+                <td class="dep-text">FE-AUTH-001</td>
+            </tr>
+            
+                </tbody>
+            </table>
+
+            <!-- What the Platform Delivers & Outputs After this Sprint -->
+            <div class="sprint-output-box no-break">
+                <div class="sprint-output-header">
+                    <span class="output-icon">🎯</span>
+                    <h4>What The Platform Delivers &amp; Outputs After Sprint 1 (Security MVP)</h4>
+                </div>
+                <p class="output-summary">At the conclusion of Sprint 1, the platform features a complete, enterprise-grade authentication portal where users can register, log in, maintain secure sessions, and access role-restricted resources.</p>
+                <div class="output-grid">
+                    <div class="output-col">
+                        <div class="output-col-title">🖥️ User Interface &amp; Pages</div>
+                        <ul>
+                            <li>Live Login (/login) and Self-Registration (/register) portals with real-time validation and error banners</li><li>Authenticated User Profile screen (/profile) displaying user identity, email, and assigned roles</li><li>Admin RBAC Verification screen (/admin) showing live permission status against backend endpoints</li><li>Role-tailored navigation sidebar and top bar automatically hiding/showing modules based on granted roles</li><li>Client-side protected route guards (/routes/ProtectedRoute) preventing unauthorized access with /403 redirect</li>
+                        </ul>
+                    </div>
+                    <div class="output-col">
+                        <div class="output-col-title">⚙️ Backend Engines &amp; APIs</div>
+                        <ul>
+                            <li>Stateless JWT access token issuance (15-min lifetime) with Nimbus HMAC validation</li><li>Single-use rotating refresh tokens stored in HttpOnly, SameSite=Strict cookies with replay theft detection</li><li>Single-flight Axios interceptor queue preventing race conditions during concurrent token refreshes</li><li>Role-Based Access Control enforcing 5 seeded roles: ADMIN, CISO, GRC_ANALYST, SOC_ANALYST, PENTESTER</li><li>Automated system admin bootstrap runner initializing default root credentials safely</li>
+                        </ul>
+                    </div>
+                    <div class="output-col">
+                        <div class="output-col-title">💼 Milestone Business Impact</div>
+                        <p class="output-impact-text">Zero-trust user identity foundation. Protects all future business modules (risks, vulnerabilities, compliance) from unauthorized access, session hijacking, and brute-force token reuse.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="phase-block page-break-before">
+            <div class="phase-header" style="border-left-color: #06b6d4;">
+                <div class="phase-meta">
+                    <span class="sprint-tag">Sprint 2 (Public Web Presence)</span>
+                    <span class="badge badge-planned">READY TO COMMENCE — HIGH PRIORITY</span>
+                </div>
+                <h2>Phase 2: Public Website, Marketing Portal & Landing Pages</h2>
+                <p class="phase-objective"><strong>Milestone Goal:</strong> Build the complete public-facing web experience that visitors see when visiting the domain: Home Page, Services, About Us, Pricing, Contact Us, and Demo Request.</p>
+            </div>
+            
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 12%;">Task ID</th>
+                        <th style="width: 36%;">Task Title & Acceptance Criteria</th>
+                        <th style="width: 12%;">Subsystem</th>
+                        <th style="width: 7%;">Prio</th>
+                        <th style="width: 6%;">Effort</th>
+                        <th style="width: 15%;">Status</th>
+                        <th style="width: 12%;">Dependencies</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+            <tr>
+                <td class="code-id">FE-NAV-001</td>
+                <td>
+                    <div class="task-title">Public Sticky Header & Responsive Navbar</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Navbar with Logo, navigation links, ThemeToggle, and 'Sign In' / 'Get Started' action buttons.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">INFRA-004</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-FOOT-001</td>
+                <td>
+                    <div class="task-title">Global Public Footer & Sitemap Component</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Footer with product links, company overview, newsletter signup, and copyright notice.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">S</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">INFRA-004</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-HOME-001</td>
+                <td>
+                    <div class="task-title">Home Page: Hero Section & Action CTAs</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Impactful Hero with cybersecurity badge, bold value statement, 'Start Free Trial' and 'Book Demo' CTAs.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">FE-NAV-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-HOME-002</td>
+                <td>
+                    <div class="task-title">Home Page: Core Security Solutions Grid</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> 4 Interactive cards showcasing GRC, SOC, Pentest Ingestion, and Predictive AI with hover micro-animations.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">FE-HOME-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-HOME-003</td>
+                <td>
+                    <div class="task-title">Home Page: Interactive Live Risk Calculator Widget</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Client-side interactive widget letting visitors adjust sliders and preview live risk score calculation in real time.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">FE-HOME-002</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-HOME-004</td>
+                <td>
+                    <div class="task-title">Home Page: Metrics Counter & Testimonials</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Animated statistics bar (e.g. 70% Faster Audits, 99.9% Uptime) and executive quote carousel.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">S</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">FE-HOME-002</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-SERV-001</td>
+                <td>
+                    <div class="task-title">Dedicated Services & Solutions Page (/services)</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Comprehensive solutions page with deep dives into GRC automation, live SOC telemetry, and AI playbooks.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">FE-NAV-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-ABOUT-001</td>
+                <td>
+                    <div class="task-title">About Us & Leadership Page (/about)</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Mission, vision, technology stack badges, and Leadership Architect profile for Mohamed Shosha.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">FE-NAV-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-PRICE-001</td>
+                <td>
+                    <div class="task-title">Pricing & Subscription Plans Page (/pricing)</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> 3-tier pricing cards (Community, Professional, Enterprise) with monthly/annual toggle and feature matrix.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">FE-NAV-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-CONT-001</td>
+                <td>
+                    <div class="task-title">Contact Us & Inquiry Form Page (/contact)</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Interactive contact form with real-time validation, business email checks, and direct support info.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">FE-NAV-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-DEMO-001</td>
+                <td>
+                    <div class="task-title">Book a Live Product Demo Modal & Scheduler</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Interactive modal allowing prospects to select date/time and request an architectural walkthrough.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">FE-CONT-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-FAQ-001</td>
+                <td>
+                    <div class="task-title">Interactive FAQ Accordion Component</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Smooth expandable accordion answering top questions regarding data privacy, compliance, and AI safety.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p2">P2</span></td>
+                <td><span class="effort-tag">S</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">FE-CONT-001</td>
+            </tr>
+            
+                </tbody>
+            </table>
+
+            <!-- What the Platform Delivers & Outputs After this Sprint -->
+            <div class="sprint-output-box no-break">
+                <div class="sprint-output-header">
+                    <span class="output-icon">🎯</span>
+                    <h4>What The Platform Delivers &amp; Outputs After Sprint 2 (Public Web Presence)</h4>
+                </div>
+                <p class="output-summary">At the conclusion of Sprint 2, the website features a stunning, world-class public cyber marketing portal. Any visitor can explore platform solutions, test the interactive live risk simulator, view pricing tiers, read company background, and submit demo requests.</p>
+                <div class="output-grid">
+                    <div class="output-col">
+                        <div class="output-col-title">🖥️ User Interface &amp; Pages</div>
+                        <ul>
+                            <li>Public Sticky Navbar with brand crest, navigation links (Home, Services, Pricing, About, Contact), Theme Toggle, and 'Sign In / Register' CTAs</li><li>Home Page (/) featuring Hero banner with dynamic cyber particle effects, feature showcases, and an Interactive Live Risk Simulator slider widget</li><li>Services & Solutions Page (/services) breaking down GRC Automation, SOC Monitoring, Pentest Linking, and AI Remediation</li><li>About Us Page (/about) detailing the mission, engineering philosophy, and leadership profile of Mohamed Shosha</li><li>Pricing Plans Page (/pricing) featuring Community, Starter, and Enterprise tiers with a feature comparison checklist</li><li>Contact Us & Demo Request Page (/contact) with interactive inquiry form, office location info, and interactive FAQ accordion</li><li>Global Responsive Footer with sitemap links, social channels, newsletter subscription, and legal terms</li>
+                        </ul>
+                    </div>
+                    <div class="output-col">
+                        <div class="output-col-title">⚙️ Backend Engines &amp; APIs</div>
+                        <ul>
+                            <li>Contact Inquiry & Demo Request API (/api/public/contact) validating and logging prospect leads</li><li>Newsletter Subscription API (/api/public/newsletter) storing email opt-ins</li><li>Public System Status Probe (/api/public/status) providing live platform operational health metrics</li>
+                        </ul>
+                    </div>
+                    <div class="output-col">
+                        <div class="output-col-title">💼 Milestone Business Impact</div>
+                        <p class="output-impact-text">Transforms the technical backend repository into an attractive, customer-facing SaaS product that inspires confidence, clearly explains the platform value, and converts visitors into registered users.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="phase-block page-break-before">
+            <div class="phase-header" style="border-left-color: #0284c7;">
+                <div class="phase-meta">
+                    <span class="sprint-tag">Sprint 3 (Asset & Vuln Core)</span>
+                    <span class="badge badge-planned">PLANNED</span>
+                </div>
+                <h2>Phase 3: Asset Inventory & Vulnerability Ingestion</h2>
+                <p class="phase-objective"><strong>Milestone Goal:</strong> Establish centralized asset repository with classification/criticality tiers, and implement vulnerability finding ingestion with CVSS v3 score parsing.</p>
+            </div>
+            
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 12%;">Task ID</th>
+                        <th style="width: 36%;">Task Title & Acceptance Criteria</th>
+                        <th style="width: 12%;">Subsystem</th>
+                        <th style="width: 7%;">Prio</th>
+                        <th style="width: 6%;">Effort</th>
+                        <th style="width: 15%;">Status</th>
+                        <th style="width: 12%;">Dependencies</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+            <tr>
+                <td class="code-id">DB-ASSET-001</td>
+                <td>
+                    <div class="task-title">Flyway V4: Asset Entity & Classification Schema</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Create assets table with name, type, classification (Public/Confidential/Restricted), and criticality (Low..Critical).</div>
+                </td>
+                <td><span class="subsystem-tag sub-database">Database</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">DB-003</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">DB-VULN-001</td>
+                <td>
+                    <div class="task-title">Flyway V5: Vulnerabilities & Findings Schema</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Create vulnerabilities table with CVE ID, CVSS v3 base score, severity, remediation status, and asset FK.</div>
+                </td>
+                <td><span class="subsystem-tag sub-database">Database</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">DB-ASSET-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-ASSET-001</td>
+                <td>
+                    <div class="task-title">Asset Domain Entity, Repository & CRUD APIs</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Spring Boot REST controllers for listing, creating, updating, and archiving organization assets.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">DB-ASSET-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-ASSET-002</td>
+                <td>
+                    <div class="task-title">Asset Criticality & Environment Tiering Engine</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Service logic computing asset business value weighting factor based on data classification and environment.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">S</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-ASSET-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-VULN-001</td>
+                <td>
+                    <div class="task-title">Vulnerability Entity, Repository & CRUD APIs</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> REST endpoints for managing vulnerability findings, status tracking (Open/Fixed/Accepted), and asset associations.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">DB-VULN-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-VULN-002</td>
+                <td>
+                    <div class="task-title">Pentest Report Ingestion & CVSS v3 Parser</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Service parsing JSON/CSV pentest reports (Nessus/Burp format) and auto-generating vulnerability records.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">L</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-VULN-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-ASSET-001</td>
+                <td>
+                    <div class="task-title">Asset Inventory Table with Multi-Filter Support</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Interactive React data table supporting filtering by asset type, environment, criticality, and search query.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-ASSET-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-ASSET-002</td>
+                <td>
+                    <div class="task-title">Asset Creation / Edit Modal & Detail View</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Modal drawer with form validation for onboarding assets and viewing linked vulnerability findings.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">FE-ASSET-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-VULN-001</td>
+                <td>
+                    <div class="task-title">Vulnerability & Finding Explorer Dashboard</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Vulnerability explorer view with severity metric cards (Critical/High/Medium/Low) and filterable finding table.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-VULN-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-VULN-002</td>
+                <td>
+                    <div class="task-title">Pentest Report Upload & Ingestion Wizard</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Drag-and-drop file uploader with schema validation, finding preview, and one-click bulk import.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-VULN-002</td>
+            </tr>
+            
+                </tbody>
+            </table>
+
+            <!-- What the Platform Delivers & Outputs After this Sprint -->
+            <div class="sprint-output-box no-break">
+                <div class="sprint-output-header">
+                    <span class="output-icon">🎯</span>
+                    <h4>What The Platform Delivers &amp; Outputs After Sprint 3 (Asset & Vuln Core)</h4>
+                </div>
+                <p class="output-summary">At the conclusion of Sprint 3, the site delivers a searchable cyber asset inventory and a vulnerability ingestion portal that turns raw pentest files into actionable technical findings.</p>
+                <div class="output-grid">
+                    <div class="output-col">
+                        <div class="output-col-title">🖥️ User Interface &amp; Pages</div>
+                        <ul>
+                            <li>Interactive Asset Inventory Catalog (/assets) with real-time search, environment filters (Prod/Staging/Dev), and criticality badges</li><li>Asset Creation / Edit Modal Drawer allowing engineers to register new servers, web apps, databases, and cloud services</li><li>Vulnerability Explorer Dashboard (/vulnerabilities) with metric cards showing Critical, High, Medium, and Low findings</li><li>Pentest Ingestion Wizard allowing drag-and-drop file uploads (JSON/CSV) with live parsing preview and bulk import confirmation</li>
+                        </ul>
+                    </div>
+                    <div class="output-col">
+                        <div class="output-col-title">⚙️ Backend Engines &amp; APIs</div>
+                        <ul>
+                            <li>RESTful Asset Management APIs (/api/assets) supporting CRUD operations with RBAC permission enforcement</li><li>Asset Criticality Weighting Service calculating organizational impact factors based on data classification tier</li><li>Vulnerability Finding CRUD APIs (/api/vulnerabilities) linking findings directly to affected asset entity IDs</li><li>Automated CVSS v3 Parser ingesting raw scanner reports (Nessus, Burp Suite, OpenVAS) and normalizing vulnerability metrics</li>
+                        </ul>
+                    </div>
+                    <div class="output-col">
+                        <div class="output-col-title">💼 Milestone Business Impact</div>
+                        <p class="output-impact-text">Eliminates shadow IT and fragmented vulnerability spreadsheets by creating an authoritative single-source inventory of all enterprise IT assets and their active vulnerabilities.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="phase-block page-break-before">
+            <div class="phase-header" style="border-left-color: #d97706;">
+                <div class="phase-meta">
+                    <span class="sprint-tag">Sprint 4 (Risk Engine)</span>
+                    <span class="badge badge-planned">PLANNED</span>
+                </div>
+                <h2>Phase 4: Centralized Risk Register & Dynamic Scoring Engine</h2>
+                <p class="phase-objective"><strong>Milestone Goal:</strong> Build centralized cyber risk register, implement algorithmic live risk scoring model combining assets and vulnerabilities, and construct interactive 5x5 heatmap.</p>
+            </div>
+            
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 12%;">Task ID</th>
+                        <th style="width: 36%;">Task Title & Acceptance Criteria</th>
+                        <th style="width: 12%;">Subsystem</th>
+                        <th style="width: 7%;">Prio</th>
+                        <th style="width: 6%;">Effort</th>
+                        <th style="width: 15%;">Status</th>
+                        <th style="width: 12%;">Dependencies</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+            <tr>
+                <td class="code-id">DB-RISK-001</td>
+                <td>
+                    <div class="task-title">Flyway V6: Risk Register & Scoring Schema</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Create risks table with title, category, asset FK, inherent/residual scores, live_risk_score, and FAIR exposure ($).</div>
+                </td>
+                <td><span class="subsystem-tag sub-database">Database</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">DB-VULN-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-RISK-001</td>
+                <td>
+                    <div class="task-title">Risk Entity, Repository & CRUD APIs</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> REST controllers for full risk lifecycle management (Identify, Assess, Treat, Accept, Review).</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">DB-RISK-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-RISK-002</td>
+                <td>
+                    <div class="task-title">Dynamic Algorithmic Risk Calculation Engine</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Algorithmic engine: Score = [(Criticality * 0.35) + (CVSS * 0.35) + (Likelihood * 0.20)] * (1 - ControlEff * 0.70).</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">L</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-RISK-001, BE-VULN-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-RISK-003</td>
+                <td>
+                    <div class="task-title">Financial Exposure Quantification (FAIR Model)</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> FAIR framework computation: Annualized Loss Expectancy (ALE) = Single Loss Expectancy (SLE) * ARO ($ USD).</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-RISK-002</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-RISK-004</td>
+                <td>
+                    <div class="task-title">Risk Prioritization Matrix Engine (5x5 Heatmap)</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Matrix aggregation service grouping active risks into 5x5 likelihood/impact coordinates with boundary thresholds.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-RISK-002</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-RISK-001</td>
+                <td>
+                    <div class="task-title">Centralized Risk Register Data Grid & Filtering</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Interactive risk register table with live risk score meter, category filters, owner tags, and status updates.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-RISK-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-RISK-002</td>
+                <td>
+                    <div class="task-title">Interactive 5x5 Risk Heatmap Component</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Visual 5x5 colored grid component with risk count badges, click-to-filter interaction, and cell drill-down.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-RISK-004</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-RISK-003</td>
+                <td>
+                    <div class="task-title">Risk Creation Wizard with Real-Time Score Preview</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Multi-step risk assessment modal calculating real-time risk score preview as the user adjusts parameters.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-RISK-002</td>
+            </tr>
+            
+                </tbody>
+            </table>
+
+            <!-- What the Platform Delivers & Outputs After this Sprint -->
+            <div class="sprint-output-box no-break">
+                <div class="sprint-output-header">
+                    <span class="output-icon">🎯</span>
+                    <h4>What The Platform Delivers &amp; Outputs After Sprint 4 (Risk Engine)</h4>
+                </div>
+                <p class="output-summary">At the conclusion of Sprint 4, the site delivers a full GRC Risk Register with real-time algorithmic risk scoring, an interactive 5x5 heatmap, and quantified financial loss estimation ($ USD).</p>
+                <div class="output-grid">
+                    <div class="output-col">
+                        <div class="output-col-title">🖥️ User Interface &amp; Pages</div>
+                        <ul>
+                            <li>Centralized Risk Register Grid (/risks) displaying risk ID, category, owner, inherent/residual scores, and live risk score meters</li><li>Interactive 5x5 Risk Heatmap Component (Likelihood vs. Impact) with dynamic cell counters and click-to-filter drill-down</li><li>Multi-Step Risk Assessment Wizard with real-time score preview slider responding immediately as parameters change</li><li>Financial Risk Exposure Card displaying FAIR dollar quantification ($ USD) per risk and for the entire organization</li>
+                        </ul>
+                    </div>
+                    <div class="output-col">
+                        <div class="output-col-title">⚙️ Backend Engines &amp; APIs</div>
+                        <ul>
+                            <li>Algorithmic Dynamic Scoring Engine computing Live Risk Score (1–100) automatically on every asset/vulnerability update</li><li>FAIR Framework Calculator quantifying Annualized Loss Expectancy (ALE = SLE * ARO) based on business criticality</li><li>Risk Matrix Aggregation API grouping active risks into likelihood/impact coordinates with boundary color coding</li><li>Event listener listening for vulnerability changes and recalculating affected organizational risk scores automatically</li>
+                        </ul>
+                    </div>
+                    <div class="output-col">
+                        <div class="output-col-title">💼 Milestone Business Impact</div>
+                        <p class="output-impact-text">Transforms abstract technical vulnerability metrics into quantified financial exposure that executive management and board members can immediately understand and prioritize.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="phase-block page-break-before">
+            <div class="phase-header" style="border-left-color: #7c3aed;">
+                <div class="phase-meta">
+                    <span class="sprint-tag">Sprint 5 (GRC & Compliance)</span>
+                    <span class="badge badge-planned">PLANNED</span>
+                </div>
+                <h2>Phase 5: Compliance Management & Policy Governance</h2>
+                <p class="phase-objective"><strong>Milestone Goal:</strong> Implement multi-framework baseline compliance tracking (ISO 27001, NIST CSF, SOC 2), control assessment checklists, and security policy versioning.</p>
+            </div>
+            
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 12%;">Task ID</th>
+                        <th style="width: 36%;">Task Title & Acceptance Criteria</th>
+                        <th style="width: 12%;">Subsystem</th>
+                        <th style="width: 7%;">Prio</th>
+                        <th style="width: 6%;">Effort</th>
+                        <th style="width: 15%;">Status</th>
+                        <th style="width: 12%;">Dependencies</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+            <tr>
+                <td class="code-id">DB-COMP-001</td>
+                <td>
+                    <div class="task-title">Flyway V7: Frameworks, Controls & Assessment Schema</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Create compliance_frameworks, controls, and control_assessments tables with audit evidence attachments.</div>
+                </td>
+                <td><span class="subsystem-tag sub-database">Database</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">DB-RISK-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">DB-POL-001</td>
+                <td>
+                    <div class="task-title">Flyway V8: Policy Governance & Document Versioning</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Create security_policies and policy_revisions tables tracking version, review cycle, and approval state.</div>
+                </td>
+                <td><span class="subsystem-tag sub-database">Database</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">DB-COMP-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-COMP-001</td>
+                <td>
+                    <div class="task-title">Framework Baseline Seeds (ISO 27001, NIST, SOC 2)</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Seed datasets containing ISO/IEC 27001:2022 clauses, NIST CSF 2.0 categories, and SOC 2 Trust Services Criteria.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">DB-COMP-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-COMP-002</td>
+                <td>
+                    <div class="task-title">Compliance Score Calculation Engine (% Progress)</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Service aggregating control implementation status into percentage compliance score per framework.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-COMP-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-COMP-003</td>
+                <td>
+                    <div class="task-title">Control Assessment & Audit Evidence Upload API</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> REST endpoints for assessing controls (Compliant/In-Progress/Non-Compliant) and uploading audit evidence files.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-COMP-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-POL-001</td>
+                <td>
+                    <div class="task-title">Security Policy Repository & Lifecycle Workflow</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> REST APIs managing policy lifecycle state machine: DRAFT -> UNDER_REVIEW -> APPROVED -> RETIRED.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">DB-POL-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-POL-002</td>
+                <td>
+                    <div class="task-title">Policy Document Versioning & Secure Storage</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Storage service managing version increments, change logs, and secure document attachments.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p2">P2</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-POL-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-COMP-001</td>
+                <td>
+                    <div class="task-title">Compliance Posture Radial Gauges & Overview</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Compliance dashboard with radial progress meters for ISO 27001, NIST CSF, and SOC 2 posture.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-COMP-002</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-COMP-002</td>
+                <td>
+                    <div class="task-title">Control Assessment Checklist & Evidence Modal</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Interactive checklist interface allowing auditors to update control statuses and view evidence.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-COMP-003</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-POL-001</td>
+                <td>
+                    <div class="task-title">Security Policy Document Reader & Version History</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Markdown document reader displaying active corporate security policies with revision history timeline.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-POL-001</td>
+            </tr>
+            
+                </tbody>
+            </table>
+
+            <!-- What the Platform Delivers & Outputs After this Sprint -->
+            <div class="sprint-output-box no-break">
+                <div class="sprint-output-header">
+                    <span class="output-icon">🎯</span>
+                    <h4>What The Platform Delivers &amp; Outputs After Sprint 5 (GRC & Compliance)</h4>
+                </div>
+                <p class="output-summary">At the conclusion of Sprint 5, the platform provides continuous compliance tracking across major frameworks and a policy governance repository with version history.</p>
+                <div class="output-grid">
+                    <div class="output-col">
+                        <div class="output-col-title">🖥️ User Interface &amp; Pages</div>
+                        <ul>
+                            <li>Compliance Posture Dashboard (/compliance) featuring radial progress gauges for ISO/IEC 27001, NIST CSF 2.0, and SOC 2 Type II</li><li>Control Assessment Checklist allowing auditors to evaluate controls (Compliant, In-Progress, Non-Compliant) with evidence badges</li><li>Audit Evidence Upload Modal allowing compliance teams to attach PDF/screenshot verification proofs to specific controls</li><li>Security Policy Repository & Document Reader (/policies) displaying company policies in markdown with version change history</li>
+                        </ul>
+                    </div>
+                    <div class="output-col">
+                        <div class="output-col-title">⚙️ Backend Engines &amp; APIs</div>
+                        <ul>
+                            <li>Preloaded framework baseline seeds for ISO 27001:2022 clauses, NIST CSF categories, and SOC 2 Trust Criteria</li><li>Automated Compliance Percentage Engine aggregating control statuses into real-time readiness scores</li><li>Audit Evidence Storage Service handling secure file uploads, hashing, and link associations with controls</li><li>Policy Lifecycle State Machine managing document status workflows (Draft -> Under Review -> Approved -> Retired)</li>
+                        </ul>
+                    </div>
+                    <div class="output-col">
+                        <div class="output-col-title">💼 Milestone Business Impact</div>
+                        <p class="output-impact-text">Replaces manual audit spreadsheets with continuous, real-time audit readiness, cutting external audit prep time by up to 70%.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="phase-block page-break-before">
+            <div class="phase-header" style="border-left-color: #e11d48;">
+                <div class="phase-meta">
+                    <span class="sprint-tag">Sprint 6 (SOC Operations)</span>
+                    <span class="badge badge-planned">PLANNED</span>
+                </div>
+                <h2>Phase 6: Security Incident Management & Workflow Automation</h2>
+                <p class="phase-objective"><strong>Milestone Goal:</strong> Build security incident triage board, state machine tracking containment SLAs, and automated alerting for critical risk threshold breaches.</p>
+            </div>
+            
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 12%;">Task ID</th>
+                        <th style="width: 36%;">Task Title & Acceptance Criteria</th>
+                        <th style="width: 12%;">Subsystem</th>
+                        <th style="width: 7%;">Prio</th>
+                        <th style="width: 6%;">Effort</th>
+                        <th style="width: 15%;">Status</th>
+                        <th style="width: 12%;">Dependencies</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+            <tr>
+                <td class="code-id">DB-INC-001</td>
+                <td>
+                    <div class="task-title">Flyway V9: Incidents, Timeline & Alerting Schema</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Create incidents, incident_timeline, and notification_events tables with severity and SLA deadlines.</div>
+                </td>
+                <td><span class="subsystem-tag sub-database">Database</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">DB-RISK-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-INC-001</td>
+                <td>
+                    <div class="task-title">Incident Entity, Repository & State Machine</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> REST controller and state machine enforcing transitions: REPORTED -> TRIAGED -> CONTAINMENT -> RESOLVED.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">DB-INC-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-INC-002</td>
+                <td>
+                    <div class="task-title">Incident-to-Asset/Risk Correlation API</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Correlation service linking incoming security incidents directly to registered assets and open risks.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-INC-001, BE-RISK-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-NOTIF-001</td>
+                <td>
+                    <div class="task-title">Critical Risk Threshold Alert Dispatcher</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Event listener firing real-time notifications when a risk exceeds critical score threshold or incident SLA breaches.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-INC-001, BE-RISK-002</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-INC-001</td>
+                <td>
+                    <div class="task-title">Incident Triage Board (Kanban / List with SLAs)</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Kanban drag-and-drop / filterable list view showing active incidents, severity badges, and countdown timers.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-INC-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-INC-002</td>
+                <td>
+                    <div class="task-title">Incident Timeline & Containment Audit Log Screen</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Detailed incident view showing root cause analysis, containment checklist, and chronological audit log.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-INC-002</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-NOTIF-001</td>
+                <td>
+                    <div class="task-title">Real-Time Notification Center & Alert Banner</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Header notification bell with unread badge counter, alert dropdown, and toast notification popups.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-NOTIF-001</td>
+            </tr>
+            
+                </tbody>
+            </table>
+
+            <!-- What the Platform Delivers & Outputs After this Sprint -->
+            <div class="sprint-output-box no-break">
+                <div class="sprint-output-header">
+                    <span class="output-icon">🎯</span>
+                    <h4>What The Platform Delivers &amp; Outputs After Sprint 6 (SOC Operations)</h4>
+                </div>
+                <p class="output-summary">At the conclusion of Sprint 6, the site offers an operational SOC Incident Triage Center with SLA countdown clocks, containment audit logging, and in-app alert notifications.</p>
+                <div class="output-grid">
+                    <div class="output-col">
+                        <div class="output-col-title">🖥️ User Interface &amp; Pages</div>
+                        <ul>
+                            <li>Incident Triage Kanban Board (/incidents) organizing active cases across Reported, Triaged, Containment, and Resolved columns</li><li>SLA Countdown Clocks with visual warning colors (Yellow/Red) alerting responders when breach windows approach</li><li>Incident Detail View showing linked affected assets, risk severity, lead investigator assignment, and containment checklist</li><li>Real-Time Notification Drawer in the header showing unread badge count, high-risk breach alerts, and dismiss controls</li>
+                        </ul>
+                    </div>
+                    <div class="output-col">
+                        <div class="output-col-title">⚙️ Backend Engines &amp; APIs</div>
+                        <ul>
+                            <li>Incident Lifecycle State Machine strictly enforcing legal investigation transitions and audit events</li><li>Incident-to-Asset and Risk Correlation Engine mapping active attacks directly to registered infrastructure</li><li>Critical Risk Alert Dispatcher firing asynchronous notifications whenever live risk scores breach critical thresholds</li><li>Immutable Chronological Audit Timeline tracking every action taken during incident triage and containment</li>
+                        </ul>
+                    </div>
+                    <div class="output-col">
+                        <div class="output-col-title">💼 Milestone Business Impact</div>
+                        <p class="output-impact-text">Drastically reduces Mean Time to Detect (MTTD) and Mean Time to Respond (MTTR), ensuring organizational accountability and compliance with regulatory breach reporting windows.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="phase-block page-break-before">
+            <div class="phase-header" style="border-left-color: #2563eb;">
+                <div class="phase-meta">
+                    <span class="sprint-tag">Sprint 7 (AI Engine)</span>
+                    <span class="badge badge-planned">PLANNED</span>
+                </div>
+                <h2>Phase 7: AI-Powered Risk Prediction & Intelligent Remediation</h2>
+                <p class="phase-objective"><strong>Milestone Goal:</strong> Integrate Spring AI with LLM models for automated threat vector prediction, customized remediation playbook generation, and executive report synthesis.</p>
+            </div>
+            
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 12%;">Task ID</th>
+                        <th style="width: 36%;">Task Title & Acceptance Criteria</th>
+                        <th style="width: 12%;">Subsystem</th>
+                        <th style="width: 7%;">Prio</th>
+                        <th style="width: 6%;">Effort</th>
+                        <th style="width: 15%;">Status</th>
+                        <th style="width: 12%;">Dependencies</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+            <tr>
+                <td class="code-id">DB-AI-001</td>
+                <td>
+                    <div class="task-title">Flyway V10: AI Inferences & Playbook Caching</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Create ai_inferences and remediation_playbooks tables with prompt hashes and cached responses.</div>
+                </td>
+                <td><span class="subsystem-tag sub-database">Database</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">DB-INC-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-AI-001</td>
+                <td>
+                    <div class="task-title">Spring AI / LLM Client Provider Integration</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Integrate Spring AI framework supporting OpenAI / Gemini / Ollama with token budgeting and retry resilience.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">L</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">DB-AI-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-AI-002</td>
+                <td>
+                    <div class="task-title">Threat Vector Prediction Engine</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> LLM reasoning service analyzing system asset combinations and open CVEs to predict likely attack paths.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">L</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-AI-001, BE-RISK-002</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-AI-003</td>
+                <td>
+                    <div class="task-title">Step-by-Step Remediation Playbook Generator</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Prompt engineering engine generating actionable engineering remediation steps for specific risks and CVEs.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">L</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-AI-001, BE-VULN-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-AI-004</td>
+                <td>
+                    <div class="task-title">Executive Summary Narrative Generator</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Automated generator synthesizing high-level narrative risk insights for CISO and board presentations.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p2">P2</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-AI-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-AI-001</td>
+                <td>
+                    <div class="task-title">NextRisk AI Copilot Panel in Risk/Vuln Views</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Slide-over AI Assistant drawer allowing analysts to ask questions and generate remediation suggestions.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-AI-003</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-AI-002</td>
+                <td>
+                    <div class="task-title">Remediation Action Plan Modal & Task Tracker</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Interactive modal displaying generated playbook steps with copyable CLI commands and completion checkboxes.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">FE-AI-001</td>
+            </tr>
+            
+                </tbody>
+            </table>
+
+            <!-- What the Platform Delivers & Outputs After this Sprint -->
+            <div class="sprint-output-box no-break">
+                <div class="sprint-output-header">
+                    <span class="output-icon">🎯</span>
+                    <h4>What The Platform Delivers &amp; Outputs After Sprint 7 (AI Engine)</h4>
+                </div>
+                <p class="output-summary">At the conclusion of Sprint 7, the site features an intelligent AI Copilot that forecasts likely attack vectors and generates actionable, step-by-step remediation playbooks for active risks.</p>
+                <div class="output-grid">
+                    <div class="output-col">
+                        <div class="output-col-title">🖥️ User Interface &amp; Pages</div>
+                        <ul>
+                            <li>NextRisk AI Copilot Panel embedded as a slide-over drawer in both the Risk Register and Vulnerability Explorer views</li><li>One-Click 'Generate Remediation Playbook' button producing customized mitigation procedures tailored to the asset stack</li><li>Remediation Action Plan Modal featuring copyable CLI commands, configuration patches, and task completion checkboxes</li><li>Predictive Threat Alerts Banner warning security teams of high-probability attack chains across connected assets</li>
+                        </ul>
+                    </div>
+                    <div class="output-col">
+                        <div class="output-col-title">⚙️ Backend Engines &amp; APIs</div>
+                        <ul>
+                            <li>Spring AI Integration Layer connecting to OpenAI / Gemini / Local LLMs with token budgeting and resilience retries</li><li>Threat Vector Prediction Engine analyzing asset topologies and open CVE combinations to forecast breach paths</li><li>Remediation Playbook Generation Service utilizing structured prompt templates to produce deterministic engineering fixes</li><li>AI Inference Caching Layer avoiding redundant model invocations and storing generated recommendations in MySQL</li>
+                        </ul>
+                    </div>
+                    <div class="output-col">
+                        <div class="output-col-title">💼 Milestone Business Impact</div>
+                        <p class="output-impact-text">Multiplies security team efficiency by transforming raw vulnerability alerts into verified, copy-paste engineering remediation scripts in seconds instead of hours of manual research.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="phase-block page-break-before">
+            <div class="phase-header" style="border-left-color: #059669;">
+                <div class="phase-meta">
+                    <span class="sprint-tag">Sprint 8 (Executive Insights)</span>
+                    <span class="badge badge-planned">PLANNED</span>
+                </div>
+                <h2>Phase 8: Executive & Security Dashboards + Reporting</h2>
+                <p class="phase-objective"><strong>Milestone Goal:</strong> Build CISO executive overview, real-time SOC operations feed, and automated board-ready PDF/CSV compliance report export.</p>
+            </div>
+            
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 12%;">Task ID</th>
+                        <th style="width: 36%;">Task Title & Acceptance Criteria</th>
+                        <th style="width: 12%;">Subsystem</th>
+                        <th style="width: 7%;">Prio</th>
+                        <th style="width: 6%;">Effort</th>
+                        <th style="width: 15%;">Status</th>
+                        <th style="width: 12%;">Dependencies</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+            <tr>
+                <td class="code-id">BE-DASH-001</td>
+                <td>
+                    <div class="task-title">Executive KPI Aggregation API (Org Risk, Exposure)</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> REST endpoint providing aggregated metrics: Overall Score (0-100), Total Financial Exposure ($), MTTR.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-RISK-003, BE-COMP-002</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-DASH-002</td>
+                <td>
+                    <div class="task-title">SOC Operational Telemetry & Alert Stream API</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Live operational stream endpoint returning active alerts, affected assets, and critical open findings.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-INC-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-REP-001</td>
+                <td>
+                    <div class="task-title">Automated PDF / CSV Board Report Generator</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Backend service compiling executive summaries, risk registers, and compliance postures into downloadable PDF/CSV.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">L</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-DASH-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-DASH-001</td>
+                <td>
+                    <div class="task-title">Executive CISO Dashboard (Exposure, Posture, Trends)</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> CISO dashboard featuring financial exposure gauge, top 5 critical risks, compliance dials, and trend graphs.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">L</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-DASH-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-DASH-002</td>
+                <td>
+                    <div class="task-title">SOC Real-Time Operations Monitoring Feed</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Real-time SOC monitoring interface with live threat alerts, asset status indicators, and incident ticker.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-DASH-002</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">FE-REP-001</td>
+                <td>
+                    <div class="task-title">Instant Export & Board-Ready PDF Download UI</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> One-click export modal allowing executives to download high-resolution board reports and raw audit spreadsheets.</div>
+                </td>
+                <td><span class="subsystem-tag sub-frontend">Frontend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-REP-001</td>
+            </tr>
+            
+                </tbody>
+            </table>
+
+            <!-- What the Platform Delivers & Outputs After this Sprint -->
+            <div class="sprint-output-box no-break">
+                <div class="sprint-output-header">
+                    <span class="output-icon">🎯</span>
+                    <h4>What The Platform Delivers &amp; Outputs After Sprint 8 (Executive Insights)</h4>
+                </div>
+                <p class="output-summary">At the conclusion of Sprint 8, the platform delivers dual-view executive and operational dashboards, and one-click board-ready PDF report downloads.</p>
+                <div class="output-grid">
+                    <div class="output-col">
+                        <div class="output-col-title">🖥️ User Interface &amp; Pages</div>
+                        <ul>
+                            <li>Executive CISO Dashboard (/dashboard/executive) featuring overall posture score, financial risk gauge ($ USD), top 5 risks, and trends</li><li>SOC Real-Time Operational View (/dashboard/soc) with live telemetry stream, incident ticker, and asset health status indicators</li><li>Instant Report Export Modal allowing users to generate and download comprehensive board reports and raw audit spreadsheets</li><li>Interactive posture graphs and historical trend charts showing risk reduction trajectory over time</li>
+                        </ul>
+                    </div>
+                    <div class="output-col">
+                        <div class="output-col-title">⚙️ Backend Engines &amp; APIs</div>
+                        <ul>
+                            <li>Executive KPI Aggregation Endpoint providing sub-second summary metrics for board presentations</li><li>SOC Telemetry Stream API delivering real-time incident counters, Mean Time to Remediate (MTTR), and active alerts</li><li>High-Resolution PDF / CSV Report Generation Service compiling charts, registers, and compliance statuses into downloadable files</li><li>Role-based dashboard routing automatically landing CISOs on the executive view and SOC analysts on the operational view</li>
+                        </ul>
+                    </div>
+                    <div class="output-col">
+                        <div class="output-col-title">💼 Milestone Business Impact</div>
+                        <p class="output-impact-text">Equips the CISO and executive leadership with crisp, financially quantified metrics for board meetings and regulatory filings, proving ROI on security investments.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="phase-block page-break-before">
+            <div class="phase-header" style="border-left-color: #475569;">
+                <div class="phase-meta">
+                    <span class="sprint-tag">Sprint 9 (Production Readiness)</span>
+                    <span class="badge badge-planned">PLANNED</span>
+                </div>
+                <h2>Phase 9: System Hardening, Audit Logs & Production Readiness</h2>
+                <p class="phase-objective"><strong>Milestone Goal:</strong> Implement immutable activity audit logging, query optimization, rate limiting, asymmetric token signing, and automated CI/CD pipeline.</p>
+            </div>
+            
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 12%;">Task ID</th>
+                        <th style="width: 36%;">Task Title & Acceptance Criteria</th>
+                        <th style="width: 12%;">Subsystem</th>
+                        <th style="width: 7%;">Prio</th>
+                        <th style="width: 6%;">Effort</th>
+                        <th style="width: 15%;">Status</th>
+                        <th style="width: 12%;">Dependencies</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+            <tr>
+                <td class="code-id">DB-AUDIT-001</td>
+                <td>
+                    <div class="task-title">Flyway V11: Immutable Audit Trail Schema</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Create audit_logs table storing actor ID, action, entity type, entity ID, client IP, and before/after JSON diffs.</div>
+                </td>
+                <td><span class="subsystem-tag sub-database">Database</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">DB-003</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-AUDIT-001</td>
+                <td>
+                    <div class="task-title">AspectJ Audit Logging Interceptor for Sensitive Ops</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> AOP interceptor automatically recording all CUD actions across Risk, Asset, and Policy entities.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">DB-AUDIT-001</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">BE-PERF-001</td>
+                <td>
+                    <div class="task-title">Read Query Optimization, Index Tuning & Caching</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Composite indexing on risk score queries, Spring Cache abstraction for static framework seeds.</div>
+                </td>
+                <td><span class="subsystem-tag sub-backend">Backend</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">All DB tasks</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">SEC-HARD-001</td>
+                <td>
+                    <div class="task-title">IP/User Rate Limiting (Bucket4j / Nginx Limits)</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Rate limiting on /api/auth/login and /register (10 requests/minute per IP) to prevent brute-force attacks.</div>
+                </td>
+                <td><span class="subsystem-tag sub-security">Security</span></td>
+                <td><span class="prio-tag prio-p0">P0</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-AUTH-002</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">SEC-HARD-002</td>
+                <td>
+                    <div class="task-title">Asymmetric RS256/ES256 Token Signing & JWKS</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Upgrade token signing to RS256 with public JWKS endpoint (/oauth2/jwks) for decoupled verification.</div>
+                </td>
+                <td><span class="subsystem-tag sub-security">Security</span></td>
+                <td><span class="prio-tag prio-p2">P2</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">BE-AUTH-003</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">QA-E2E-001</td>
+                <td>
+                    <div class="task-title">End-to-End Automated Browser Tests (Playwright)</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Automated browser test suite validating login, risk creation, heatmap click, and PDF export workflows.</div>
+                </td>
+                <td><span class="subsystem-tag sub-qa">QA</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">L</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">All FE/BE tasks</td>
+            </tr>
+            
+            <tr>
+                <td class="code-id">DEVOPS-CI-001</td>
+                <td>
+                    <div class="task-title">GitHub Actions Automated Build, Test & Lint CI/CD</div>
+                    <div class="task-criteria"><span class="crit-label">Acceptance:</span> Automated GitHub Actions workflow running Maven verify, Vitest suites, Docker build, and lint checks.</div>
+                </td>
+                <td><span class="subsystem-tag sub-devops">DevOps</span></td>
+                <td><span class="prio-tag prio-p1">P1</span></td>
+                <td><span class="effort-tag">M</span></td>
+                <td><span class="badge badge-planned">PLANNED</span></td>
+                <td class="dep-text">INFRA-005</td>
+            </tr>
+            
+                </tbody>
+            </table>
+
+            <!-- What the Platform Delivers & Outputs After this Sprint -->
+            <div class="sprint-output-box no-break">
+                <div class="sprint-output-header">
+                    <span class="output-icon">🎯</span>
+                    <h4>What The Platform Delivers &amp; Outputs After Sprint 9 (Production Readiness)</h4>
+                </div>
+                <p class="output-summary">At the conclusion of Sprint 9, the platform is fully production-hardened, featuring immutable audit logging, brute-force rate limiting, RS256 token verification, and automated CI/CD pipelines.</p>
+                <div class="output-grid">
+                    <div class="output-col">
+                        <div class="output-col-title">🖥️ User Interface &amp; Pages</div>
+                        <ul>
+                            <li>Audit Trail Explorer (/audit) displaying chronological system events, actor identity, IP address, and JSON before/after state diffs</li><li>Rate Limiting Warning Banners gracefully notifying users when brute-force threshold attempts are exceeded</li><li>Production-optimized, sub-second page transitions across both dark and light modes with zero layout shift</li><li>Cross-browser and responsive mobile/tablet layout certification</li>
+                        </ul>
+                    </div>
+                    <div class="output-col">
+                        <div class="output-col-title">⚙️ Backend Engines &amp; APIs</div>
+                        <ul>
+                            <li>AspectJ Audit Interceptor automatically recording all create, update, and delete actions across all core domain entities</li><li>Bucket4j In-Memory Token Bucket Rate Limiter protecting /api/auth/login and /register against brute-force attacks</li><li>Asymmetric RS256 / ES256 Token Signing Architecture with public JWKS discovery endpoint (/oauth2/jwks)</li><li>MySQL composite index optimization delivering sub-second response times across large-scale risk registers</li><li>Automated GitHub Actions CI/CD Pipeline executing Maven test suites, Vitest frontend tests, and Playwright E2E browser tests</li>
+                        </ul>
+                    </div>
+                    <div class="output-col">
+                        <div class="output-col-title">💼 Milestone Business Impact</div>
+                        <p class="output-impact-text">Provides audit-proof compliance with strict legal and enterprise regulations, and guarantees system resilience, scalability, and automated zero-downtime releases.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
+    <!-- ================= FINAL PAGE: IMMEDIATE NEXT SPRINT & SIGN-OFF ================= -->
+    <div class="page-break-before">
+        <div class="section-header">
+            <div>
+                <h2>4. Immediate Resumption Plan &amp; Document Governance</h2>
+                <p style="color: #64748b; font-size: 8.5pt;">Actionable restart checklist for Sprint 2 (Phase 2: Public Website &amp; Marketing Portal) and formal sign-off.</p>
+            </div>
+            <span class="section-tag">Execution Strategy</span>
+        </div>
+
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px; margin-bottom: 20px;">
+            <h3 style="font-size: 11pt; color: #0f172a; margin-bottom: 8px;">Sprint 2 (Phase 2: Public Website &amp; Landing Pages) — Immediate Execution Checklist</h3>
+            <p style="font-size: 8.5pt; color: #475569; margin-bottom: 12px;">When active feature development begins, build the public website in the following strict sequential dependency order:</p>
+            
+            <ol style="padding-left: 20px; font-size: 8.5pt; color: #334155; line-height: 1.6;">
+                <li><strong>Step 1 (FE-NAV-001 &amp; FE-FOOT-001):</strong> Build <code>PublicNavbar.jsx</code> with brand crest, navigation links (Home, Services, Pricing, About, Contact), ThemeToggle, and 'Sign In' / 'Get Started' buttons; and <code>PublicFooter.jsx</code> with complete sitemap and newsletter signup.</li>
+                <li><strong>Step 2 (FE-HOME-001 &amp; FE-HOME-002):</strong> Build <code>HomePage.jsx</code> with an impactful Hero banner, cybersecurity value proposition, and the 4 interactive solution cards (GRC, SOC, Pentest, AI).</li>
+                <li><strong>Step 3 (FE-HOME-003):</strong> Implement the <code>InteractiveRiskSimulator.jsx</code> component on the Home Page, allowing prospective visitors to adjust sliders and preview live risk score calculation in real time.</li>
+                <li><strong>Step 4 (FE-SERV-001 &amp; FE-PRICE-001):</strong> Create <code>ServicesPage.jsx</code> detailing the platform's cybersecurity modules, and <code>PricingPage.jsx</code> with Community, Starter, and Enterprise tier cards with monthly/annual billing toggle.</li>
+                <li><strong>Step 5 (FE-ABOUT-001, FE-CONT-001 &amp; FE-DEMO-001):</strong> Build <code>AboutPage.jsx</code> featuring project leadership by Mohamed Shosha, <code>ContactPage.jsx</code> with validated inquiry form and FAQ accordion, and <code>BookDemoModal.jsx</code> for scheduling product walkthroughs.</li>
+            </ol>
+        </div>
+
+        <!-- Document Sign-off Box (English Only) -->
+        <div class="signoff-box">
+            <h3 style="font-size: 11.5pt; color: #0f172a; font-weight: 800;">Document Approval &amp; Architecture Sign-off</h3>
+            <p style="font-size: 8.5pt; color: #64748b; margin-top: 2px;">This document represents the master development specification and sprint backlog for NextRisk AI (TRUVIA).</p>
+            
+            <div class="signoff-grid">
+                <div class="signoff-item">
+                    <h5>Project Architect &amp; Engineering Lead</h5>
+                    <p>Mohamed Shosha</p>
+                    <span style="font-size: 8pt; color: #64748b;">Lead Solutions Architect &bull; NextRisk AI</span>
+                </div>
+                <div class="signoff-item">
+                    <h5>Status &amp; Approval</h5>
+                    <p style="color: #059669;">APPROVED</p>
+                    <span style="font-size: 8pt; color: #64748b;">Active Development Roadmap (v2.0.0)</span>
+                </div>
+                <div class="signoff-item">
+                    <h5>Release Date</h5>
+                    <p>October 2026</p>
+                    <span style="font-size: 8pt; color: #64748b;">Version 2.0.0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

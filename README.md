@@ -16,6 +16,7 @@
 ## 📑 Table of Contents
 
 - [Overview & Vision](#-overview--vision)
+- [Documentation & Master Roadmap](#-documentation--master-roadmap)
 - [Architecture & Tech Stack](#-architecture--tech-stack)
 - [Repository Structure](#-repository-structure)
 - [Authentication & Security Architecture](#-authentication--security-architecture)
@@ -49,7 +50,24 @@ Modern cybersecurity teams often suffer from disjointed tooling: GRC analysts tr
 4. **Security Operations & Incident Triage**: Correlating live incidents directly to affected risk entries.
 5. **AI-Driven Remediation**: Predictive guidance and actionable playbooks generated to mitigate critical exposures.
 
-> ℹ️ **Current Status:** Foundation + **Phase 1: Authentication Core & RBAC MVP** is fully implemented and tested. See [plan.md](plan.md) for the complete phase-by-phase roadmap.
+> ℹ️ **Current Status:** Foundation + **Phase 1: Authentication Core & RBAC MVP** is fully implemented and tested. See the [Master Roadmap PDF](docs/NextRisk_AI_Master_Roadmap_Mohamed_Shosha.pdf) and [Task Backlog](docs/TASK_BACKLOG.md) for the 96-task development plan.
+
+---
+
+## 📚 Documentation & Master Roadmap
+
+All formal specifications, architectural audits, and development roadmaps are centralized inside the [`docs/`](docs/) directory:
+
+| Document | Format | Description |
+|---|---|---|
+| **[NextRisk AI Master Roadmap](docs/NextRisk_AI_Master_Roadmap_Mohamed_Shosha.pdf)** | `PDF (25 Pages)` | Executive-grade sprint plan with platform sitemap, functional matrix, and 96 granular tasks. |
+| **[Interactive Implementation Plan](docs/NextRisk_AI_Implementation_Plan_Mohamed_Shosha.html)** | `HTML (Web)` | Print-optimized web version of the master implementation plan. |
+| **[Task Backlog](docs/TASK_BACKLOG.md)** | `Markdown` | 96 engineering tasks across 10 Sprints (Phases 0–9) formatted for Jira / Linear migration. |
+| **[Project Audit & Handover Report](docs/PROJECT_STATUS_AND_HANDOVER.md)** | `Markdown` | Comprehensive audit covering repository health, APIs, database, and safe pause checklist. |
+| **[Architecture Status](docs/ARCHITECTURE_STATUS.md)** | `Markdown` | Detailed architectural inventory of implemented vs. planned subsystems. |
+| **[Security Findings & Hardening](docs/SECURITY_FINDINGS.md)** | `Markdown` | Security audit matrix, threat model, and hardening recommendations. |
+| **[Local Development Guide](docs/LOCAL_DEVELOPMENT_GUIDE.md)** | `Markdown` | Step-by-step developer onboarding for host and containerized workflows. |
+| **[Original Specification](docs/plan.md)** | `Markdown` | Initial product architecture and phase definitions. |
 
 ---
 
@@ -117,12 +135,23 @@ nextrisk/
 │   ├── docker-compose.yml               # MySQL 8 + backend app profile
 │   └── mysql-init/                      # Automatic test database initialization
 │
-├── scripts/                             # Operational automation
+├── docs/                                # Centralized documentation & architecture
+│   ├── NextRisk_AI_Master_Roadmap_Mohamed_Shosha.pdf   # 25-page executive PDF roadmap
+│   ├── NextRisk_AI_Implementation_Plan_Mohamed_Shosha.html # Interactive web roadmap
+│   ├── TASK_BACKLOG.md                  # 96 engineering tasks across 10 Sprints
+│   ├── PROJECT_STATUS_AND_HANDOVER.md   # Complete project audit & safe-pause report
+│   ├── ARCHITECTURE_STATUS.md           # Implemented vs. planned subsystems
+│   ├── SECURITY_FINDINGS.md             # Security audit matrix & hardening guide
+│   ├── LOCAL_DEVELOPMENT_GUIDE.md       # Developer onboarding & env configuration
+│   └── plan.md                          # Original architectural blueprint
+│
+├── scripts/                             # Operational automation & generators
+│   ├── generate_plan_pdf.py             # Automated HTML & PDF master roadmap compiler
+│   ├── sync_backlog_md.py               # Markdown task backlog synchronizer
 │   └── test_api.ps1                     # PowerShell smoke-test script for auth endpoints
 │
 ├── .env.example                         # Environment configuration template
-├── plan.md                              # Master implementation specification & roadmap
-└── README.md                            # Project documentation
+└── README.md                            # Project overview & quick start guide
 ```
 
 ---
