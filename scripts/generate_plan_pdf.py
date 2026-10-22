@@ -13,7 +13,7 @@ from pathlib import Path
 
 WORKSPACE = Path(r"c:\Users\Mohamed Shosha\Desktop\nextrisk")
 HTML_OUTPUT = WORKSPACE / "docs" / "NextRisk_AI_Implementation_Plan_Mohamed_Shosha.html"
-PDF_OUTPUT = WORKSPACE / "NextRisk_AI_Master_Roadmap_Mohamed_Shosha.pdf"
+PDF_OUTPUT = WORKSPACE / "docs" / "NextRisk_AI_Master_Roadmap_Mohamed_Shosha.pdf"
 CHROME_PATH = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
 
 # Functional Requirements Matrix (Public Website + Enterprise Platform)

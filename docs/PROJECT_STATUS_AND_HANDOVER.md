@@ -496,7 +496,7 @@ docker compose -f docker/docker-compose.yml stop
 - Flyway Migrations: `backend/src/main/resources/db/migration/`
 - Frontend API Client: [`frontend/src/services/apiClient.js`](file:///c:/Users/Mohamed%20Shosha/Desktop/nextrisk/frontend/src/services/apiClient.js)
 - Frontend Auth Context: [`frontend/src/context/AuthContext.jsx`](file:///c:/Users/Mohamed%20Shosha/Desktop/nextrisk/frontend/src/context/AuthContext.jsx)
-- Master Plan: [`plan.md`](file:///c:/Users/Mohamed%20Shosha/Desktop/nextrisk/plan.md)
+- Master Plan: [`docs/plan.md`](file:///c:/Users/Mohamed%20Shosha/Desktop/nextrisk/docs/plan.md)
 
 ### 3. Verification Commands for Resuming Agent
 ```powershell
