@@ -1,15 +1,22 @@
 package com.nextrisk.auth.service;
 
+import com.nextrisk.auth.dto.AdminUserResponse;
 import com.nextrisk.auth.dto.AuthResponse;
+import com.nextrisk.auth.dto.ChangePasswordRequest;
+import com.nextrisk.auth.dto.CreateUserRequest;
 import com.nextrisk.auth.dto.LoginRequest;
-import com.nextrisk.auth.dto.RegisterRequest;
+import com.nextrisk.auth.dto.ResetPasswordRequest;
 import com.nextrisk.auth.dto.UserResponse;
 import com.nextrisk.auth.entity.Role;
 import com.nextrisk.auth.entity.User;
+import com.nextrisk.auth.repository.RefreshTokenRepository;
 import com.nextrisk.auth.repository.RoleRepository;
 import com.nextrisk.auth.repository.UserRepository;
 import com.nextrisk.common.ApiException;
 import com.nextrisk.security.JwtService;
+import java.time.Instant;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,15 +45,18 @@ public class AuthService {
 
     private final UserRepository users;
     private final RoleRepository roles;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokens;
 
-    public AuthService(UserRepository users, RoleRepository roles, PasswordEncoder passwordEncoder,
-            AuthenticationManager authenticationManager, JwtService jwtService, RefreshTokenService refreshTokens) {
+    public AuthService(UserRepository users, RoleRepository roles, RefreshTokenRepository refreshTokenRepository,
+            PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager,
+            JwtService jwtService, RefreshTokenService refreshTokens) {
         this.users = users;
         this.roles = roles;
+        this.refreshTokenRepository = refreshTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
@@ -59,26 +69,6 @@ public class AuthService {
 
     static String normalizeName(String name) {
         return name == null ? "" : name.trim().replaceAll("\\s+", " ");
-    }
-
-    @Transactional
-    public UserResponse register(RegisterRequest request) {
-        String email = normalizeEmail(request.email());
-        if (users.existsByEmail(email)) {
-            throw new EmailAlreadyExistsException();
-        }
-        Role role = roles.findByName(Role.DEFAULT_REGISTRATION_ROLE)
-                .orElseThrow(() -> new IllegalStateException("Default role is missing; run database migrations"));
-        User user = new User(normalizeName(request.fullName()), email, passwordEncoder.encode(request.password()));
-        user.getRoles().add(role);
-        try {
-            users.saveAndFlush(user);
-        } catch (DataIntegrityViolationException e) {
-            // Lost a race with a concurrent registration of the same email.
-            throw new EmailAlreadyExistsException();
-        }
-        log.info("User registered (userId={})", user.getId());
-        return UserResponse.from(user);
     }
 
     @Transactional
@@ -122,6 +112,80 @@ public class AuthService {
                 .filter(User::isEnabled)
                 .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "Authentication is required or the token is invalid"));
         return UserResponse.from(user);
+    }
+
+    /** Changes the password for the currently logged-in user. */
+    @Transactional
+    public void changePassword(String subject, ChangePasswordRequest request) {
+        long id;
+        try {
+            id = Long.parseLong(subject);
+        } catch (NumberFormatException e) {
+            throw new ApiException(HttpStatus.UNAUTHORIZED, "Authentication is required or the token is invalid");
+        }
+        User user = users.findById(id)
+                .filter(User::isEnabled)
+                .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "User not found or disabled"));
+
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Current password does not match");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        users.save(user);
+        log.info("User password changed successfully (userId={})", user.getId());
+    }
+
+    /** Admin: creates a new user account with specified role. */
+    @Transactional
+    public AdminUserResponse createUserByAdmin(CreateUserRequest request) {
+        String email = normalizeEmail(request.email());
+        if (users.existsByEmail(email)) {
+            throw new EmailAlreadyExistsException();
+        }
+
+        String roleName = request.role().trim().toUpperCase(Locale.ROOT);
+        if (!roleName.startsWith("ROLE_")) {
+            roleName = "ROLE_" + roleName;
+        }
+
+        Role role = roles.findByName(roleName)
+                .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Invalid role specified: " + request.role()));
+
+        User user = new User(normalizeName(request.fullName()), email, passwordEncoder.encode(request.password()));
+        user.getRoles().add(role);
+
+        try {
+            users.saveAndFlush(user);
+        } catch (DataIntegrityViolationException e) {
+            throw new EmailAlreadyExistsException();
+        }
+
+        log.info("Admin created new user (userId={}, role={})", user.getId(), role.getName());
+        return AdminUserResponse.from(user);
+    }
+
+    /** Admin: resets any user's password and revokes existing sessions for security. */
+    @Transactional
+    public void adminResetPassword(Long userId, ResetPasswordRequest request) {
+        User user = users.findById(userId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User not found with id: " + userId));
+
+        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        users.save(user);
+
+        // Revoke active refresh tokens for this user to force re-login
+        refreshTokenRepository.revokeAllForUser(user.getId(), Instant.now());
+        log.info("Admin reset password for user (userId={})", user.getId());
+    }
+
+    /** Admin: list all users. */
+    @Transactional(readOnly = true)
+    public List<AdminUserResponse> listAllUsers() {
+        return users.findAll().stream()
+                .sorted(Comparator.comparing(User::getId))
+                .map(AdminUserResponse::from)
+                .toList();
     }
 
     private AuthResponse buildResponse(User user) {

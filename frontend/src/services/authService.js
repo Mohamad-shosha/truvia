@@ -3,12 +3,6 @@ import { tokenStore } from './tokenStore';
 import { normalizeError } from './errors';
 
 export const authService = {
-  /** Creates an account. Does not sign the user in. */
-  async register({ fullName, email, password }) {
-    const res = await http.post('/api/auth/register', { fullName, email, password }, { skipAuth: true });
-    return res.data;
-  },
-
   /** @returns {Promise<{accessToken, tokenType, expiresIn, user}>} */
   async login({ email, password, rememberMe }) {
     const res = await http.post(
@@ -22,6 +16,15 @@ export const authService = {
 
   async getMe() {
     const res = await http.get('/api/auth/me');
+    return res.data;
+  },
+
+  /** Allows an authenticated user to change their own password. */
+  async changePassword({ currentPassword, newPassword }) {
+    const res = await http.post('/api/auth/change-password', {
+      currentPassword,
+      newPassword,
+    });
     return res.data;
   },
 

@@ -1,27 +1,45 @@
 package com.nextrisk;
 
+import com.nextrisk.auth.entity.Role;
 import com.nextrisk.auth.entity.User;
-import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.test.web.servlet.MvcResult;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class RegistrationIntegrationTest extends AbstractIntegrationTest {
 
-    private String body(String name, String email, String password) throws Exception {
-        return json.writeValueAsString(Map.of("fullName", name, "email", email, "password", password));
+    private String adminCreateBody(String name, String email, String password, String role) throws Exception {
+        return json.writeValueAsString(Map.of(
+                "fullName", name,
+                "email", email,
+                "password", password,
+                "role", role
+        ));
     }
 
     @Test
-    void registersUserWithBcryptHashDefaultRoleAndNormalizedEmail() throws Exception {
-        MvcResult result = mvc.perform(post("/api/auth/register").contentType("application/json")
-                        .content(body("  Jane   Doe ", "  Jane.Doe@Example.COM ", PASSWORD)))
+    void publicRegistrationIsDisabled() throws Exception {
+        mvc.perform(post("/api/auth/register").contentType("application/json")
+                        .content(json.writeValueAsString(Map.of("email", "test@test.com", "password", PASSWORD, "fullName", "Test User"))))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void adminCanCreateUserAndAssignRole() throws Exception {
+        User admin = createUser("admin@company.com", ADMIN);
+        String adminToken = accessToken(login("admin@company.com", PASSWORD, false));
+
+        MvcResult result = mvc.perform(post("/api/admin/users")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType("application/json")
+                        .content(adminCreateBody("  Jane   Doe ", "  Jane.Doe@Example.COM ", PASSWORD, Role.GRC_ANALYST)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.email").value("jane.doe@example.com"))
                 .andExpect(jsonPath("$.fullName").value("Jane Doe"))
@@ -38,54 +56,40 @@ class RegistrationIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    void rejectsInvalidFieldsWithFieldLevelErrors() throws Exception {
-        mvc.perform(post("/api/auth/register").contentType("application/json")
-                        .content(body(" ", "not-an-email", "short")))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Validation failed"))
-                .andExpect(jsonPath("$.fieldErrors[?(@.field=='fullName')]").exists())
-                .andExpect(jsonPath("$.fieldErrors[?(@.field=='email')]").exists())
-                .andExpect(jsonPath("$.fieldErrors[?(@.field=='password')]").exists())
-                .andExpect(jsonPath("$.trace").doesNotExist());
-        assertThat(users.count()).isZero();
+    void adminCanResetUserPassword() throws Exception {
+        User admin = createUser("admin@company.com", ADMIN);
+        String adminToken = accessToken(login("admin@company.com", PASSWORD, false));
+        User employee = createUser("emp@company.com", GRC);
+
+        String newPassword = "New-Secure-Pass-123";
+        mvc.perform(post("/api/admin/users/" + employee.getId() + "/reset-password")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType("application/json")
+                        .content(json.writeValueAsString(Map.of("newPassword", newPassword))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Password reset successfully"));
+
+        User updated = users.findById(employee.getId()).orElseThrow();
+        assertThat(BCrypt.checkpw(newPassword, updated.getPasswordHash())).isTrue();
     }
 
     @Test
-    void rejectsPasswordWithoutDigit() throws Exception {
-        mvc.perform(post("/api/auth/register").contentType("application/json")
-                        .content(body("Jane Doe", "jane@example.com", "OnlyLettersHere")))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.fieldErrors[?(@.field=='password')]").exists());
-    }
+    void userCanChangeOwnPassword() throws Exception {
+        User user = createUser("user@company.com", GRC);
+        String token = accessToken(login("user@company.com", PASSWORD, false));
 
-    @Test
-    void rejectsDuplicateEmailCaseInsensitively() throws Exception {
-        mvc.perform(post("/api/auth/register").contentType("application/json")
-                .content(body("Jane Doe", "jane@example.com", PASSWORD))).andExpect(status().isCreated());
-        mvc.perform(post("/api/auth/register").contentType("application/json")
-                        .content(body("Other Jane", " JANE@example.com", PASSWORD)))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.status").value(409));
-        assertThat(users.count()).isEqualTo(1);
-    }
+        String newSecretPassword = "My-Own-Secret-Pass-456";
+        mvc.perform(post("/api/auth/change-password")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType("application/json")
+                        .content(json.writeValueAsString(Map.of(
+                                "currentPassword", PASSWORD,
+                                "newPassword", newSecretPassword
+                        ))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Password changed successfully"));
 
-    @Test
-    void clientCannotEscalatePrivilegesByAddingRoles() throws Exception {
-        String payload = json.writeValueAsString(Map.of(
-                "fullName", "Mallory", "email", "mallory@example.com", "password", PASSWORD,
-                "roles", List.of("ROLE_ADMIN")));
-        mvc.perform(post("/api/auth/register").contentType("application/json").content(payload))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.fieldErrors[0].field").value("roles"));
-        assertThat(users.existsByEmail("mallory@example.com")).isFalse();
-        assertThat(users.existsByRoles_Name("ROLE_ADMIN")).isFalse();
-
-        for (String key : List.of("role", "authorities", "enabled", "admin")) {
-            String variant = json.writeValueAsString(Map.of(
-                    "fullName", "Mallory", "email", "mallory@example.com", "password", PASSWORD, key, "ROLE_ADMIN"));
-            mvc.perform(post("/api/auth/register").contentType("application/json").content(variant))
-                    .andExpect(status().isBadRequest());
-        }
-        assertThat(users.count()).isZero();
+        User updated = users.findById(user.getId()).orElseThrow();
+        assertThat(BCrypt.checkpw(newSecretPassword, updated.getPasswordHash())).isTrue();
     }
 }

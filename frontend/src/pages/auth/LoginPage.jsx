@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import AuthLayout from '../../components/AuthLayout';
 import TextField from '../../components/TextField';
 import Button from '../../components/Button';
@@ -17,7 +17,6 @@ export default function LoginPage() {
   const [touched, setTouched] = useState({});
   const [serverError, setServerError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [showForgot, setShowForgot] = useState(false);
 
   const errors = {
     email: validateEmail(values.email),
@@ -64,7 +63,6 @@ export default function LoginPage() {
       </header>
 
       <div className="stack">
-        {state.registered && <Alert variant="success">Account created. You can sign in now.</Alert>}
         {(state.expired || sessionExpired) && <Alert variant="warning">Your session has expired. Please sign in again.</Alert>}
         {state.loggedOut && !state.serverRevoked && (
           <Alert variant="warning">
@@ -108,13 +106,7 @@ export default function LoginPage() {
             <input type="checkbox" name="rememberMe" checked={values.rememberMe} onChange={set('rememberMe')} disabled={submitting} />
             <span>Remember me</span>
           </label>
-          <button type="button" className="link-btn" onClick={() => setShowForgot((s) => !s)} aria-expanded={showForgot}>
-            Forgot Password?
-          </button>
         </div>
-        {showForgot && (
-          <Alert variant="info">Self-service password reset is not available yet. Please contact your administrator.</Alert>
-        )}
 
         <Button id="login-submit" type="submit" loading={submitting} icon={<ArrowIcon />}>
           {submitting ? 'Signing in…' : 'Sign In'}
@@ -122,7 +114,9 @@ export default function LoginPage() {
       </form>
 
       <footer className="auth-card__foot">
-        <span>I don&apos;t have an Account</span> <Link to="/register">Sign Up</Link>
+        <span className="text-muted" style={{ fontSize: '0.82rem' }}>
+          Account creation and password recovery are managed by your company administrator.
+        </span>
       </footer>
     </AuthLayout>
   );
