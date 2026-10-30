@@ -5,19 +5,24 @@ import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
 import { AuthProvider } from '../context/AuthContext';
 import { authService } from '../services/authService';
-import { adminPing } from '../services/adminService';
+import { adminListUsers, adminPing } from '../services/adminService';
 import { notifySessionExpired } from '../services/apiClient';
 
 vi.mock('../services/authService', () => ({
   authService: {
-    register: vi.fn(),
     login: vi.fn(),
     getMe: vi.fn(),
     refresh: vi.fn(),
     logout: vi.fn(),
+    changePassword: vi.fn(),
   },
 }));
-vi.mock('../services/adminService', () => ({ adminPing: vi.fn() }));
+vi.mock('../services/adminService', () => ({
+  adminPing: vi.fn(),
+  adminListUsers: vi.fn(),
+  adminCreateUser: vi.fn(),
+  adminResetPassword: vi.fn(),
+}));
 
 const member = { id: 1, fullName: 'Jane Doe', email: 'jane@example.com', roles: ['ROLE_GRC_ANALYST'] };
 const admin = { id: 2, fullName: 'Ada Admin', email: 'ada@example.com', roles: ['ROLE_ADMIN'] };
@@ -91,22 +96,22 @@ describe('role-aware navigation', () => {
     renderApp('/admin');
     expect(await screen.findByRole('heading', { name: /access denied/i })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /administration/i })).not.toBeInTheDocument();
-    expect(adminPing).not.toHaveBeenCalled();
+    expect(adminListUsers).not.toHaveBeenCalled();
   });
 
-  it('shows the admin link and asks the backend to confirm access for admins', async () => {
+  it('shows the admin link and renders admin provisioning for admins', async () => {
     signedIn(admin);
-    adminPing.mockResolvedValue({ status: 'ok' });
+    adminListUsers.mockResolvedValue([]);
     renderApp('/profile');
     await userEvent.click(await screen.findByRole('link', { name: /administration/i }));
-    expect(await screen.findByText(/server confirmed your role_admin access/i)).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /administration & user provisioning/i })).toBeInTheDocument();
   });
 
-  it('surfaces a backend 403 even when the UI let the user in', async () => {
+  it('surfaces an error when admin user list fails to load', async () => {
     signedIn(admin);
-    adminPing.mockRejectedValue({ status: 403, message: 'You do not have permission to perform this action' });
+    adminListUsers.mockRejectedValue({ status: 500, message: 'Server error loading users' });
     renderApp('/admin');
-    expect(await screen.findByRole('alert')).toHaveTextContent(/do not have permission/i);
+    expect(await screen.findByRole('alert')).toHaveTextContent(/server error loading users/i);
   });
 });
 

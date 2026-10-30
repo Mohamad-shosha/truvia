@@ -6,8 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-@Schema(description = "Public self-registration payload. Roles cannot be supplied; unknown fields are rejected.")
-public record RegisterRequest(
+@Schema(description = "Admin payload to create a new user account with a specific role.")
+public record CreateUserRequest(
         @Schema(example = "Jane Doe")
         @NotBlank(message = "Full name is required")
         @Size(min = 2, max = 120, message = "Full name must be between 2 and 120 characters")
@@ -24,15 +24,20 @@ public record RegisterRequest(
         @NotBlank(message = "Password is required")
         @Size(min = 10, max = 64, message = "Password must be between 10 and 64 characters")
         @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d).+$", message = "Password must contain at least one letter and one digit")
-        String password) {
+        String password,
 
-    public RegisterRequest {
+        @Schema(example = "ROLE_GRC_ANALYST", description = "Role to assign. Must be one of: ROLE_ADMIN, ROLE_CISO, ROLE_GRC_ANALYST, ROLE_SOC_ANALYST, ROLE_PENTESTER")
+        @NotBlank(message = "Role is required")
+        String role) {
+
+    public CreateUserRequest {
         fullName = fullName != null ? fullName.trim() : null;
         email = email != null ? email.trim() : null;
     }
 
     @Override
     public String toString() {
-        return "RegisterRequest[email=" + email + ", password=***]";
+        return "CreateUserRequest[email=" + email + ", role=" + role + ", password=***]";
     }
 }
+

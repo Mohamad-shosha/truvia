@@ -5,16 +5,42 @@ import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
 import { AuthProvider } from '../context/AuthContext';
 import { authService } from '../services/authService';
+import { adminCreateUser, adminListUsers, adminResetPassword } from '../services/adminService';
 
 vi.mock('../services/authService', () => ({
-  authService: { register: vi.fn(), login: vi.fn(), getMe: vi.fn(), refresh: vi.fn(), logout: vi.fn() },
+  authService: {
+    login: vi.fn(),
+    getMe: vi.fn(),
+    refresh: vi.fn(),
+    logout: vi.fn(),
+    changePassword: vi.fn(),
+  },
 }));
-vi.mock('../services/adminService', () => ({ adminPing: vi.fn() }));
+
+vi.mock('../services/adminService', () => ({
+  adminPing: vi.fn(),
+  adminListUsers: vi.fn(),
+  adminCreateUser: vi.fn(),
+  adminResetPassword: vi.fn(),
+}));
 
 const member = { id: 1, fullName: 'Jane Doe', email: 'jane@example.com', roles: ['ROLE_GRC_ANALYST'] };
+const admin = { id: 2, fullName: 'Ada Admin', email: 'ada@example.com', roles: ['ROLE_ADMIN'] };
 
 function renderAt(path) {
   authService.refresh.mockRejectedValue({ status: 401 });
+  return render(
+    <MemoryRouter initialEntries={[path]}>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </MemoryRouter>,
+  );
+}
+
+function renderAuthenticated(path, user = member) {
+  authService.refresh.mockResolvedValue({ accessToken: 'valid-token', user });
+  authService.getMe.mockResolvedValue(user);
   return render(
     <MemoryRouter initialEntries={[path]}>
       <AuthProvider>
@@ -99,75 +125,64 @@ describe('LoginPage', () => {
     expect(input).toHaveAttribute('type', 'text');
   });
 
-  it('does not pretend password reset exists', async () => {
+  it('has no Sign Up link or Forgot Password button', async () => {
     renderAt('/login');
-    await userEvent.click(await screen.findByRole('button', { name: /forgot password/i }));
-    expect(screen.getByText(/not available yet/i)).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /sign up/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /forgot password/i })).not.toBeInTheDocument();
   });
 });
 
-describe('RegisterPage', () => {
-  async function fill({ name = 'Jane Doe', email = 'jane@example.com', pw = 'Str0ng-Passphrase', confirm = pw } = {}) {
-    await userEvent.type(await screen.findByLabelText('Full Name'), name);
-    await userEvent.type(screen.getByLabelText('Email Address'), email);
-    await userEvent.type(screen.getByLabelText('Password'), pw);
-    await userEvent.type(screen.getByLabelText('Confirm Password'), confirm);
-  }
+describe('ProfilePage Password Change', () => {
+  it('allows users to change their own password with validation', async () => {
+    authService.changePassword.mockResolvedValue({ message: 'Password changed successfully' });
+    renderAuthenticated('/profile', member);
 
-  it('has no role selector', async () => {
-    renderAt('/register');
-    await screen.findByLabelText('Full Name');
-    expect(screen.queryByLabelText(/role/i)).not.toBeInTheDocument();
-    expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
-  });
+    expect(await screen.findByRole('heading', { name: /your profile/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /security & password/i })).toBeInTheDocument();
 
-  it('validates the form, including the password policy and confirmation', async () => {
-    renderAt('/register');
-    await fill({ name: 'J', email: 'bad', pw: 'short', confirm: 'different' });
-    await userEvent.click(screen.getByRole('button', { name: /create account/i }));
-    expect(await screen.findByText(/at least 2 characters/i)).toBeInTheDocument();
-    expect(screen.getByText('Enter a valid email address')).toBeInTheDocument();
-    expect(screen.getByText(/at least 10 characters/i)).toBeInTheDocument();
-    expect(screen.getByText('Passwords do not match')).toBeInTheDocument();
-    expect(authService.register).not.toHaveBeenCalled();
-  });
+    await userEvent.type(screen.getByLabelText('Current Password'), 'Old-Password-1');
+    await userEvent.type(screen.getByLabelText('New Password'), 'New-Secret-Pass-2');
+    await userEvent.type(screen.getByLabelText('Confirm New Password'), 'New-Secret-Pass-2');
 
-  it('registers (without sending confirm/roles) and sends the user to login with a success notice', async () => {
-    authService.register.mockResolvedValue({ id: 1 });
-    renderAt('/register');
-    await fill();
-    await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+    await userEvent.click(screen.getByRole('button', { name: /update password/i }));
 
-    expect(authService.register).toHaveBeenCalledWith({
-      fullName: 'Jane Doe',
-      email: 'jane@example.com',
-      password: 'Str0ng-Passphrase',
+    expect(authService.changePassword).toHaveBeenCalledWith({
+      currentPassword: 'Old-Password-1',
+      newPassword: 'New-Secret-Pass-2',
     });
-    expect(await screen.findByRole('heading', { name: 'Log In' })).toBeInTheDocument();
-    expect(screen.getByText(/account created/i)).toBeInTheDocument();
+    expect(await screen.findByText(/your password has been changed successfully/i)).toBeInTheDocument();
   });
+});
 
-  it('shows a clear duplicate-email error on the email field', async () => {
-    authService.register.mockRejectedValue({ status: 409, message: 'An account with this email already exists', fieldErrors: {} });
-    renderAt('/register');
-    await fill();
-    await userEvent.click(screen.getByRole('button', { name: /create account/i }));
-    expect(await screen.findByText('An account with this email already exists.')).toBeInTheDocument();
-    expect(screen.getByLabelText('Email Address')).toHaveAttribute('aria-invalid', 'true');
-    expect(screen.getByRole('button', { name: /create account/i })).toBeEnabled();
-  });
-
-  it('renders server-side field validation errors', async () => {
-    authService.register.mockRejectedValue({
-      status: 400,
-      message: 'Validation failed',
-      fieldErrors: { password: 'Password must contain at least one letter and one digit' },
+describe('Admin User Provisioning', () => {
+  it('allows admin to create user and view company directory', async () => {
+    adminListUsers.mockResolvedValue([
+      { id: 1, fullName: 'Jane Doe', email: 'jane@example.com', roles: ['ROLE_GRC_ANALYST'], enabled: true },
+    ]);
+    adminCreateUser.mockResolvedValue({
+      id: 2,
+      fullName: 'Bob Smith',
+      email: 'bob@example.com',
+      roles: ['ROLE_SOC_ANALYST'],
+      enabled: true,
     });
-    renderAt('/register');
-    await fill();
+
+    renderAuthenticated('/admin', admin);
+
+    expect(await screen.findByRole('heading', { name: /administration & user provisioning/i })).toBeInTheDocument();
+    expect(screen.getByText('Jane Doe')).toBeInTheDocument();
+
+    await userEvent.type(screen.getByLabelText('Full Name'), 'Bob Smith');
+    await userEvent.type(screen.getByLabelText('Email Address'), 'bob@example.com');
+    await userEvent.type(screen.getByLabelText('Initial Password'), 'Initial-Pass-123');
+
     await userEvent.click(screen.getByRole('button', { name: /create account/i }));
-    await waitFor(() =>
-      expect(screen.getByText('Password must contain at least one letter and one digit')).toBeInTheDocument(),
-    );
+
+    expect(adminCreateUser).toHaveBeenCalledWith({
+      fullName: 'Bob Smith',
+      email: 'bob@example.com',
+      password: 'Initial-Pass-123',
+      role: 'ROLE_GRC_ANALYST',
+    });
   });
 });

@@ -1,8 +1,8 @@
 package com.nextrisk.auth.controller;
 
 import com.nextrisk.auth.dto.AuthResponse;
+import com.nextrisk.auth.dto.ChangePasswordRequest;
 import com.nextrisk.auth.dto.LoginRequest;
-import com.nextrisk.auth.dto.RegisterRequest;
 import com.nextrisk.auth.dto.UserResponse;
 import com.nextrisk.auth.service.AuthService;
 import com.nextrisk.auth.service.RefreshCookieFactory;
@@ -14,9 +14,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.util.Map;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,17 +45,6 @@ public class AuthController {
         this.cookies = cookies;
     }
 
-    @PostMapping("/register")
-    @Operation(summary = "Self-register a new account",
-            description = "Always assigns ROLE_GRC_ANALYST server-side. Does NOT sign the user in. "
-                    + "Unknown fields (e.g. `roles`) are rejected with 400.")
-    @ApiResponse(responseCode = "201", description = "Account created")
-    @ApiResponse(responseCode = "400", description = "Validation failed", content = @Content(schema = @Schema(implementation = ApiError.class)))
-    @ApiResponse(responseCode = "409", description = "Email already registered", content = @Content(schema = @Schema(implementation = ApiError.class)))
-    public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
-    }
-
     @PostMapping("/login")
     @Operation(summary = "Sign in",
             description = "Returns a short-lived access token in the body (send as `Authorization: Bearer`). "
@@ -79,10 +69,9 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    @Operation(summary = "Sign out (addition to the original endpoint list)",
+    @Operation(summary = "Sign out",
             description = "Revokes the server-side refresh-token family for the cookie presented and clears the cookie. "
-                    + "Idempotent. The current access token stays valid until it expires (max 15 min by default) "
-                    + "because access tokens are stateless. Requires header `X-Requested-With: XMLHttpRequest`.")
+                    + "Idempotent. Requires header `X-Requested-With: XMLHttpRequest`.")
     @ApiResponse(responseCode = "204", description = "Cookie cleared; any matching server session revoked")
     @ApiResponse(responseCode = "403", description = "Missing X-Requested-With header", content = @Content(schema = @Schema(implementation = ApiError.class)))
     public ResponseEntity<Void> logout(HttpServletRequest request) {
@@ -99,6 +88,20 @@ public class AuthController {
     @ApiResponse(responseCode = "401", description = "Missing/invalid/expired token or disabled user", content = @Content(schema = @Schema(implementation = ApiError.class)))
     public UserResponse me(@AuthenticationPrincipal Jwt jwt) {
         return authService.currentUser(jwt.getSubject());
+    }
+
+    @PostMapping("/change-password")
+    @Operation(summary = "Change own password",
+            description = "Allows an authenticated user to update their current password to a new secret password.",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponse(responseCode = "200", description = "Password changed successfully")
+    @ApiResponse(responseCode = "400", description = "Validation failed or wrong current password", content = @Content(schema = @Schema(implementation = ApiError.class)))
+    @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(schema = @Schema(implementation = ApiError.class)))
+    public ResponseEntity<Map<String, String>> changePassword(
+            @AuthenticationPrincipal Jwt jwt,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        authService.changePassword(jwt.getSubject(), request);
+        return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
     }
 
     private ResponseEntity<AuthResponse> withCookie(AuthService.Session session) {
