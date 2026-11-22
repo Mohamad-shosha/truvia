@@ -44,6 +44,13 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @Column(name = "last_login_at")
+    private Instant lastLoginAt;
+
+    /** NULL while the account still uses a password chosen by an administrator. */
+    @Column(name = "password_changed_at")
+    private Instant passwordChangedAt;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
@@ -97,6 +104,31 @@ public class User {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    public Instant getLastLoginAt() {
+        return lastLoginAt;
+    }
+
+    public void setLastLoginAt(Instant lastLoginAt) {
+        this.lastLoginAt = lastLoginAt;
+    }
+
+    public Instant getPasswordChangedAt() {
+        return passwordChangedAt;
+    }
+
+    public void setPasswordChangedAt(Instant passwordChangedAt) {
+        this.passwordChangedAt = passwordChangedAt;
+    }
+
+    /** True while the user has not yet replaced the password an administrator set for them. */
+    public boolean isUsingAdminSetPassword() {
+        return passwordChangedAt == null;
+    }
+
+    public boolean hasRole(String roleName) {
+        return roles.stream().anyMatch(r -> r.getName().equals(roleName));
     }
 
     public Set<Role> getRoles() {

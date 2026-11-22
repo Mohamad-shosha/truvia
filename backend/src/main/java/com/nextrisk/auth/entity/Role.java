@@ -18,8 +18,8 @@ public class Role {
     public static final String SOC_ANALYST = "ROLE_SOC_ANALYST";
     public static final String PENTESTER = "ROLE_PENTESTER";
 
-    /** Role assigned to every self-registered user. Privileged roles are never self-assignable. */
-    public static final String DEFAULT_REGISTRATION_ROLE = GRC_ANALYST;
+    /** All platform roles, in display order. */
+    public static final java.util.List<String> ALL = java.util.List.of(ADMIN, CISO, GRC_ANALYST, SOC_ANALYST, PENTESTER);
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

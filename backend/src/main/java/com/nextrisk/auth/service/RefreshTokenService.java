@@ -91,6 +91,15 @@ public class RefreshTokenService {
                 .orElse(false);
     }
 
+    /** Rotation family of the presented raw token, if it is known. Never locks or rotates. */
+    @Transactional(readOnly = true)
+    public java.util.Optional<String> familyOf(String rawToken) {
+        if (rawToken == null || rawToken.isBlank()) {
+            return java.util.Optional.empty();
+        }
+        return repository.findFamilyIdByTokenHash(hash(rawToken));
+    }
+
     @Transactional
     public int purgeExpired() {
         return repository.deleteExpiredBefore(Instant.now().minus(Duration.ofDays(1)));
