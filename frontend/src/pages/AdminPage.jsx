@@ -165,7 +165,7 @@ export default function AdminPage() {
   }
 
   return (
-    <section className="page" aria-labelledby="admin-title" style={{ maxWidth: '980px' }}>
+    <section className="page" aria-labelledby="admin-title" style={{ width: 'min(1180px, 100%)' }}>
       <header>
         <h1 id="admin-title" className="page__title">
           Administration &amp; User Provisioning
