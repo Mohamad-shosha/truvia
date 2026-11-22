@@ -17,11 +17,13 @@ vi.mock('../services/authService', () => ({
     changePassword: vi.fn(),
   },
 }));
+vi.mock('../services/dashboardService', async () => (await import('./dashboardMocks')).dashboardServiceMock());
 vi.mock('../services/adminService', () => ({
   adminPing: vi.fn(),
   adminListUsers: vi.fn(),
   adminCreateUser: vi.fn(),
   adminResetPassword: vi.fn(),
+  adminSetUserStatus: vi.fn(),
 }));
 
 const member = { id: 1, fullName: 'Jane Doe', email: 'jane@example.com', roles: ['ROLE_GRC_ANALYST'] };
@@ -63,14 +65,20 @@ describe('auth initialization and protected routes', () => {
     renderApp('/profile');
     expect(await screen.findByText('Jane Doe', { selector: '#profile-name' })).toBeInTheDocument();
     expect(screen.getByText('jane@example.com', { selector: '#profile-email' })).toBeInTheDocument();
-    expect(screen.getByText('GRC Analyst')).toBeInTheDocument();
+    expect(screen.getByText('GRC Analyst', { selector: '#profile-roles .badge' })).toBeInTheDocument();
     expect(authService.getMe).toHaveBeenCalled();
   });
 
-  it('redirects signed-in users away from login (no redirect loop)', async () => {
+  it('redirects signed-in users away from login to the dashboard (no redirect loop)', async () => {
     signedIn(member);
     renderApp('/login');
-    expect(await screen.findByRole('heading', { name: /your profile/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /welcome back, jane/i })).toBeInTheDocument();
+  });
+
+  it('sends the root path to the dashboard', async () => {
+    signedIn(member);
+    renderApp('/');
+    expect(await screen.findByRole('heading', { name: /welcome back, jane/i })).toBeInTheDocument();
   });
 
   it('unknown routes render 404', async () => {
@@ -95,7 +103,7 @@ describe('role-aware navigation', () => {
     signedIn(member);
     renderApp('/admin');
     expect(await screen.findByRole('heading', { name: /access denied/i })).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: /administration/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /users & access/i })).not.toBeInTheDocument();
     expect(adminListUsers).not.toHaveBeenCalled();
   });
 
@@ -103,7 +111,7 @@ describe('role-aware navigation', () => {
     signedIn(admin);
     adminListUsers.mockResolvedValue([]);
     renderApp('/profile');
-    await userEvent.click(await screen.findByRole('link', { name: /administration/i }));
+    await userEvent.click(await screen.findByRole('link', { name: /users & access/i }));
     expect(await screen.findByRole('heading', { name: /administration & user provisioning/i })).toBeInTheDocument();
   });
 

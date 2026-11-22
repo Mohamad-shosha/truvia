@@ -14,7 +14,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.Map;
@@ -92,15 +91,17 @@ public class AuthController {
 
     @PostMapping("/change-password")
     @Operation(summary = "Change own password",
-            description = "Allows an authenticated user to update their current password to a new secret password.",
+            description = "Allows an authenticated user to update their current password. All of the user's other "
+                    + "sessions are signed out; the session making the request stays signed in.",
             security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponse(responseCode = "200", description = "Password changed successfully")
     @ApiResponse(responseCode = "400", description = "Validation failed or wrong current password", content = @Content(schema = @Schema(implementation = ApiError.class)))
     @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(schema = @Schema(implementation = ApiError.class)))
     public ResponseEntity<Map<String, String>> changePassword(
             @AuthenticationPrincipal Jwt jwt,
-            @Valid @RequestBody ChangePasswordRequest request) {
-        authService.changePassword(jwt.getSubject(), request);
+            @Valid @RequestBody ChangePasswordRequest request,
+            HttpServletRequest httpRequest) {
+        authService.changePassword(jwt.getSubject(), request, readRefreshCookie(httpRequest));
         return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
     }
 
@@ -112,16 +113,7 @@ public class AuthController {
     }
 
     private String readRefreshCookie(HttpServletRequest request) {
-        Cookie[] all = request.getCookies();
-        if (all == null) {
-            return null;
-        }
-        for (Cookie c : all) {
-            if (c.getName().equals(cookies.cookieName())) {
-                return c.getValue();
-            }
-        }
-        return null;
+        return cookies.readFrom(request);
     }
 
     private static void requireCsrfHeader(HttpServletRequest request) {

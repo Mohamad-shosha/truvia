@@ -29,7 +29,7 @@ class DatabaseAndConfigIntegrationTest extends AbstractIntegrationTest {
         var result = flyway.migrate();
         assertThat(result.migrationsExecuted).isZero();
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM roles", Integer.class)).isEqualTo(5);
-        assertThat(flyway.info().applied()).hasSize(3);
+        assertThat(flyway.info().applied()).hasSize(4);
     }
 
     @Test
@@ -62,12 +62,13 @@ class DatabaseAndConfigIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    void deletingUserCascadesToRolesAndRefreshTokens() throws Exception {
+    void deletingUserCascadesToRolesRefreshTokensAndLoginEvents() throws Exception {
         createUser("jane@example.com", GRC);
         login("jane@example.com", PASSWORD, false);
         jdbc.update("DELETE FROM users");
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM user_roles", Integer.class)).isZero();
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM refresh_tokens", Integer.class)).isZero();
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM login_events", Integer.class)).isZero();
     }
 
     @Test

@@ -9,7 +9,7 @@
 [![Vite](https://img.shields.io/badge/Vite-5.4-646CFF.svg?logo=vite)](https://vitejs.dev/)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1.svg?logo=mysql)](https://www.mysql.com/)
 [![Docker](https://img.shields.io/badge/Docker_Compose-Ready-2496ED.svg?logo=docker)](https://www.docker.com/)
-[![Vitest](https://img.shields.io/badge/Tests-36_Passing-success.svg?logo=vitest)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Tests-99_Passing-success.svg?logo=vitest)](https://vitest.dev/)
 
 ---
 
@@ -95,7 +95,7 @@ graph TD
 | **Frontend** | React 18, Vite 5.4 | React Router 6, Axios interceptors, responsive dark/light UI |
 | **Database** | MySQL 8.0 | Dockerized, utf8mb4, strict validation, Flyway schema migration |
 | **API Docs** | SpringDoc OpenAPI 2.6 | Interactive Swagger UI on `/swagger-ui.html` |
-| **Testing** | Vitest 2.1, RTL, JUnit 5 | 36 frontend test cases, Spring Security test slice, integration tests |
+| **Testing** | Vitest 2.1, RTL, JUnit 5 | 43 frontend tests (Vitest), 56 backend integration tests (JUnit + MockMvc) |
 
 ---
 
@@ -207,7 +207,7 @@ NextRisk AI defines 5 distinct system roles seeded via Flyway migration `V2__see
 |---|---|---|
 | `ROLE_ADMIN` | System Administrator | User management, platform configuration, audit logging, system health probe (`/api/admin/ping`). |
 | `ROLE_CISO` | Chief Information Security Officer | Executive dashboard, risk appetite thresholds, financial exposure reports, board metrics. |
-| `ROLE_GRC_ANALYST` | GRC Analyst | Risk register management, compliance framework controls (ISO 27001 / NIST), policy lifecycles. *(Default role on public registration)*. |
+| `ROLE_GRC_ANALYST` | GRC Analyst | Risk register management, compliance framework controls (ISO 27001 / NIST), policy lifecycles. |
 | `ROLE_SOC_ANALYST` | Security Operations Analyst | Real-time incident triage, threat telemetry, vulnerability alerts, live risk score tracking. |
 | `ROLE_PENTESTER` | Penetration Tester | Pentest finding ingestion, vulnerability evidence logging, CVSS evaluation, remediation verification. |
 
@@ -221,12 +221,37 @@ All requests and responses use `application/json`. Detailed interactive OpenAPI 
 
 | Method | Endpoint | Auth | Request Body | Success | Failure Statuses |
 |---|---|---|---|---|---|
-| `POST` | `/api/auth/register` | Public | `{ "fullName": "...", "email": "...", "password": "..." }` | `201 Created`<br>`{ "id": 1, "fullName": "...", "email": "...", "roles": ["ROLE_GRC_ANALYST"] }` | `400` Validation Error<br>`409` Duplicate Email |
 | `POST` | `/api/auth/login` | Public | `{ "email": "...", "password": "...", "rememberMe": true }` | `200 OK`<br>`{ "accessToken": "...", "tokenType": "Bearer", "expiresIn": 900, "user": {...} }` + `Set-Cookie: nr_refresh` | `400` Bad Request<br>`401` Unauthorized (Generic) |
 | `POST` | `/api/auth/refresh` | Cookie (`nr_refresh`) + `X-Requested-With` | *None (Cookie based)* | `200 OK`<br>New Access Token + Rotated Cookie | `401` Invalid/Revoked Token<br>`403` Missing Header |
 | `POST` | `/api/auth/logout` | Cookie (`nr_refresh`) + `X-Requested-With` | *None* | `204 No Content`<br>Cleared Cookie & Revoked Token Family | `403` Missing Header |
 | `GET` | `/api/auth/me` | `Bearer <JWT>` | *None* | `200 OK`<br>Current user profile and roles array | `401` Unauthorized |
 | `GET` | `/api/admin/ping` | `Bearer <JWT>` (`ROLE_ADMIN` only) | *None* | `200 OK`<br>`{ "status": "UP", "message": "Admin authorization verified" }` | `401` Unauthenticated<br>`403` Forbidden |
+| `POST` | `/api/auth/change-password` | `Bearer <JWT>` | `{ "currentPassword": "...", "newPassword": "..." }` | `200 OK`; signs out the user's other sessions | `400` Wrong current password |
+| `GET` | `/api/auth/sessions` | `Bearer <JWT>` (+ refresh cookie to flag the current one) | *None* | `200 OK` list of active sessions | `401` |
+| `DELETE` | `/api/auth/sessions/{id}` | `Bearer <JWT>` | *None* | `204 No Content` | `404` Not one of your sessions |
+| `DELETE` | `/api/auth/sessions` | `Bearer <JWT>` (+ refresh cookie) | *None* | `200 OK` `{ "revoked": n }` (keeps the current session) | `401` |
+| `GET` | `/api/admin/users` | `ROLE_ADMIN` | *None* | `200 OK` users incl. `lastLoginAt`, `usingInitialPassword` | `403` |
+| `POST` | `/api/admin/users` | `ROLE_ADMIN` | `{ "fullName", "email", "password", "role" }` | `201 Created` | `400`, `409` Duplicate email |
+| `POST` | `/api/admin/users/{id}/reset-password` | `ROLE_ADMIN` | `{ "newPassword": "..." }` | `200 OK`; revokes the user's sessions | `404` |
+| `PATCH` | `/api/admin/users/{id}/status` | `ROLE_ADMIN` | `{ "enabled": false }` | `200 OK`; disabling revokes all sessions | `400` Own account, `404` |
+
+### Dashboard Endpoints
+
+| Method | Endpoint | Who | Returns |
+|---|---|---|---|
+| `GET` | `/api/dashboard/me` | Any signed-in user | Previous sign-in, active session count, password status (`mustChangePassword`), modules for the user's roles with roadmap phase |
+| `GET` | `/api/admin/dashboard` | `ROLE_ADMIN` | Account totals, users per role, live sessions, 14-day sign-in activity (UTC days), accounts never signed in / still on an admin-set password, newest accounts |
+| `GET` | `/api/dashboard/team` | `ROLE_CISO`, `ROLE_ADMIN` | Enabled accounts per role |
+
+### Dashboard: who sees what (`/dashboard`, the landing page after sign-in)
+
+| Section | Admin | CISO | GRC / SOC / Pentester |
+|---|---|---|---|
+| My workspace (previous sign-in, sessions, password status, reminder) | ✅ | ✅ | ✅ |
+| Active sessions (sign out one / all others) | ✅ | ✅ | ✅ |
+| Platform overview (accounts, sign-in chart, roles, attention lists) | ✅ | — | — |
+| Executive view (planned KPIs, security team) | — | ✅ | — |
+| Your modules (available + planned with phase) | ✅ | ✅ | ✅ |
 
 ---
 
@@ -238,7 +263,8 @@ Database evolution is managed exclusively with **Flyway**. Hibernate is configur
 db/migration/
 ├── V1__create_users_and_roles.sql       # Users, roles, and user_roles join table
 ├── V2__seed_roles.sql                   # Idempotent seeding of the 5 platform roles
-└── V3__create_refresh_tokens.sql        # Refresh token records with family ID & hash
+├── V3__create_refresh_tokens.sql        # Refresh token records with family ID & hash
+└── V4__login_tracking_and_password_age.sql # users.last_login_at / password_changed_at + login_events
 ```
 
 ### Table Relationships
@@ -352,7 +378,7 @@ Self-registration defaults to `ROLE_GRC_ANALYST`. To safely bootstrap the primar
 
 ### Frontend Test Suite
 
-The frontend includes 36 unit and integration tests powered by **Vitest** and **React Testing Library**:
+The frontend includes 43 unit and integration tests powered by **Vitest** and **React Testing Library**:
 - Form validation rules (password complexity, confirmation matching, email formats)
 - Axios `apiClient` token interceptors, single-flight refresh queueing, and error normalization
 - AuthContext state lifecycle and session restoration

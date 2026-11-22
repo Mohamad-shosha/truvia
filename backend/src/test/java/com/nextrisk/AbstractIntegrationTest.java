@@ -54,6 +54,7 @@ public abstract class AbstractIntegrationTest {
     @BeforeEach
     void cleanTables() {
         jdbc.update("DELETE FROM refresh_tokens");
+        jdbc.update("DELETE FROM login_events");
         jdbc.update("DELETE FROM user_roles");
         jdbc.update("DELETE FROM users");
     }
@@ -82,6 +83,16 @@ public abstract class AbstractIntegrationTest {
 
     protected Cookie refreshCookie(MvcResult result) {
         return result.getResponse().getCookie("nr_refresh");
+    }
+
+    protected static String bearer(String token) {
+        return "Bearer " + token;
+    }
+
+    /** Status of POST /api/auth/refresh with the given cookie (200 when the session is still alive). */
+    protected int refreshStatus(Cookie cookie) throws Exception {
+        return mvc.perform(post("/api/auth/refresh").cookie(cookie).header("X-Requested-With", "XMLHttpRequest"))
+                .andReturn().getResponse().getStatus();
     }
 
     protected static final String ADMIN = Role.ADMIN;

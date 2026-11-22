@@ -82,6 +82,10 @@ public class RefreshToken {
         return revokedAt;
     }
 
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
     public boolean isRevoked() {
         return revokedAt != null;
     }

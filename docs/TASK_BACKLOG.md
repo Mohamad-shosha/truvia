@@ -71,7 +71,7 @@ At the conclusion of Sprint 0, the site provides a fully automated, containerize
 | **BE-AUTH-007** | **Spring Security 6 Stateless Filter Chain & CORS**<br>_Stateless session creation, custom JwtAuthenticationFilter, and explicit CORS config._ | Security | P0 | M | DONE | BE-AUTH-003 |
 | **BE-AUTH-008** | **RBAC Enforcement & Admin Probe (/api/admin/ping)**<br>_@PreAuthorize('hasRole("ADMIN")') probe returning 200 OK for admin and 403 Forbidden for non-admin._ | Backend | P0 | S | DONE | BE-AUTH-007 |
 | **BE-AUTH-009** | **Safe Bootstrap Admin Provisioning Engine**<br>_Startup runner provisioning default system administrator with deterministic role wiring._ | Security | P1 | S | DONE | BE-AUTH-002 |
-| **BE-AUTH-010** | **Automated Scheduled Expired Token Purging**<br>_Purge method implemented in RefreshTokenService; requires @Scheduled cron activation._ | Backend | P2 | S | PARTIAL | BE-AUTH-004 |
+| **BE-AUTH-010** | **Automated Scheduled Expired Token Purging**<br>_Daily @Scheduled purge (03:00 UTC) via TokenMaintenanceJob._ | Backend | P2 | S | DONE | BE-AUTH-004 |
 | **FE-AUTH-001** | **Login Page & Form Validation**<br>_React login screen with real-time field validation, error banners, and loading state._ | Frontend | P0 | M | DONE | INFRA-004 |
 | **FE-AUTH-002** | **Register Page & Form Validation**<br>_React registration screen with password confirmation, complexity checks, and redirect._ | Frontend | P0 | M | DONE | INFRA-004 |
 | **FE-AUTH-003** | **Axios Client, Interceptors & Single-Flight Refresh**<br>_Axios interceptor catching 401, queuing concurrent requests, and executing single refresh._ | Frontend | P0 | M | DONE | FE-AUTH-001 |

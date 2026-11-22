@@ -7,8 +7,10 @@ import com.nextrisk.auth.dto.CreateUserRequest;
 import com.nextrisk.auth.dto.LoginRequest;
 import com.nextrisk.auth.dto.ResetPasswordRequest;
 import com.nextrisk.auth.dto.UserResponse;
+import com.nextrisk.auth.entity.LoginEvent;
 import com.nextrisk.auth.entity.Role;
 import com.nextrisk.auth.entity.User;
+import com.nextrisk.auth.repository.LoginEventRepository;
 import com.nextrisk.auth.repository.RefreshTokenRepository;
 import com.nextrisk.auth.repository.RoleRepository;
 import com.nextrisk.auth.repository.UserRepository;
@@ -50,10 +52,11 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokens;
+    private final LoginEventRepository loginEvents;
 
     public AuthService(UserRepository users, RoleRepository roles, RefreshTokenRepository refreshTokenRepository,
             PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager,
-            JwtService jwtService, RefreshTokenService refreshTokens) {
+            JwtService jwtService, RefreshTokenService refreshTokens, LoginEventRepository loginEvents) {
         this.users = users;
         this.roles = roles;
         this.refreshTokenRepository = refreshTokenRepository;
@@ -61,6 +64,16 @@ public class AuthService {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.refreshTokens = refreshTokens;
+        this.loginEvents = loginEvents;
+    }
+
+    /** Parses the JWT subject into a user id; any malformed subject is treated as an invalid token. */
+    public static long userIdFrom(String subject) {
+        try {
+            return Long.parseLong(subject);
+        } catch (NumberFormatException | NullPointerException e) {
+            throw new ApiException(HttpStatus.UNAUTHORIZED, "Authentication is required or the token is invalid");
+        }
     }
 
     public static String normalizeEmail(String email) {
@@ -83,6 +96,8 @@ public class AuthService {
         }
         User user = users.findByEmail(email).orElseThrow(() -> new BadCredentialsException("Invalid email or password"));
         RefreshTokenService.Issued refresh = refreshTokens.issue(user, request.rememberMe());
+        user.setLastLoginAt(Instant.now());
+        loginEvents.save(new LoginEvent(user, request.rememberMe()));
         log.info("User logged in (userId={})", user.getId());
         return new Session(buildResponse(user), refresh.rawToken(), request.rememberMe());
     }
@@ -102,27 +117,21 @@ public class AuthService {
 
     @Transactional(readOnly = true)
     public UserResponse currentUser(String subject) {
-        long id;
-        try {
-            id = Long.parseLong(subject);
-        } catch (NumberFormatException e) {
-            throw new ApiException(HttpStatus.UNAUTHORIZED, "Authentication is required or the token is invalid");
-        }
+        long id = userIdFrom(subject);
         User user = users.findById(id)
                 .filter(User::isEnabled)
                 .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "Authentication is required or the token is invalid"));
         return UserResponse.from(user);
     }
 
-    /** Changes the password for the currently logged-in user. */
+    /**
+     * Changes the password for the currently logged-in user and signs out every other session.
+     * The session identified by {@code currentRefreshToken} (the caller's own) stays signed in; when it is
+     * absent or unknown, all sessions are revoked.
+     */
     @Transactional
-    public void changePassword(String subject, ChangePasswordRequest request) {
-        long id;
-        try {
-            id = Long.parseLong(subject);
-        } catch (NumberFormatException e) {
-            throw new ApiException(HttpStatus.UNAUTHORIZED, "Authentication is required or the token is invalid");
-        }
+    public void changePassword(String subject, ChangePasswordRequest request, String currentRefreshToken) {
+        long id = userIdFrom(subject);
         User user = users.findById(id)
                 .filter(User::isEnabled)
                 .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "User not found or disabled"));
@@ -131,9 +140,15 @@ public class AuthService {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Current password does not match");
         }
 
+        Instant now = Instant.now();
         user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        user.setPasswordChangedAt(now);
         users.save(user);
-        log.info("User password changed successfully (userId={})", user.getId());
+
+        int revoked = refreshTokens.familyOf(currentRefreshToken)
+                .map(family -> refreshTokenRepository.revokeAllForUserExceptFamily(user.getId(), family, now))
+                .orElseGet(() -> refreshTokenRepository.revokeAllForUser(user.getId(), now));
+        log.info("User password changed successfully (userId={}, otherSessionsRevoked={})", user.getId(), revoked);
     }
 
     /** Admin: creates a new user account with specified role. */
@@ -172,11 +187,34 @@ public class AuthService {
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User not found with id: " + userId));
 
         user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        // An administrator chose this password: the user is asked to replace it again.
+        user.setPasswordChangedAt(null);
         users.save(user);
 
         // Revoke active refresh tokens for this user to force re-login
         refreshTokenRepository.revokeAllForUser(user.getId(), Instant.now());
         log.info("Admin reset password for user (userId={})", user.getId());
+    }
+
+    /**
+     * Admin: enables or disables an account. Disabling signs the user out everywhere.
+     * Administrators cannot disable their own account, so at least one enabled administrator always remains.
+     */
+    @Transactional
+    public AdminUserResponse setUserEnabled(String actorSubject, Long userId, boolean enabled) {
+        long actorId = userIdFrom(actorSubject);
+        User user = users.findById(userId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User not found with id: " + userId));
+        if (!enabled && user.getId() == actorId) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "You cannot disable your own account");
+        }
+        user.setEnabled(enabled);
+        users.save(user);
+        if (!enabled) {
+            refreshTokenRepository.revokeAllForUser(user.getId(), Instant.now());
+        }
+        log.info("Admin changed account status (userId={}, enabled={}, actorId={})", user.getId(), enabled, actorId);
+        return AdminUserResponse.from(user);
     }
 
     /** Admin: list all users. */

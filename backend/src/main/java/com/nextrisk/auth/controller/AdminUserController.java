@@ -3,6 +3,7 @@ package com.nextrisk.auth.controller;
 import com.nextrisk.auth.dto.AdminUserResponse;
 import com.nextrisk.auth.dto.CreateUserRequest;
 import com.nextrisk.auth.dto.ResetPasswordRequest;
+import com.nextrisk.auth.dto.UserStatusRequest;
 import com.nextrisk.auth.service.AuthService;
 import com.nextrisk.common.ApiError;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,7 +18,10 @@ import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -65,6 +69,20 @@ public class AdminUserController {
             @Valid @RequestBody ResetPasswordRequest request) {
         authService.adminResetPassword(id, request);
         return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
+    }
+
+    @PatchMapping("/{id}/status")
+    @Operation(summary = "Enable or disable an employee account",
+            description = "ROLE_ADMIN only. Disabling signs the user out of every session. "
+                    + "Administrators cannot disable their own account.")
+    @ApiResponse(responseCode = "200", description = "Updated user")
+    @ApiResponse(responseCode = "400", description = "Attempt to disable own account", content = @Content(schema = @Schema(implementation = ApiError.class)))
+    @ApiResponse(responseCode = "404", description = "User not found", content = @Content(schema = @Schema(implementation = ApiError.class)))
+    public AdminUserResponse setStatus(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable Long id,
+            @Valid @RequestBody UserStatusRequest request) {
+        return authService.setUserEnabled(jwt.getSubject(), id, request.enabled());
     }
 }
 

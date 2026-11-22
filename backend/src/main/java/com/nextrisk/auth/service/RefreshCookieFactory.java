@@ -1,6 +1,8 @@
 package com.nextrisk.auth.service;
 
 import com.nextrisk.config.SecurityProperties;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import java.time.Duration;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
@@ -32,6 +34,20 @@ public class RefreshCookieFactory {
 
     public String cookieName() {
         return props.cookieName();
+    }
+
+    /** Raw refresh token from the request cookie, or null. Sent only to paths under the cookie path. */
+    public String readFrom(HttpServletRequest request) {
+        Cookie[] all = request.getCookies();
+        if (all == null) {
+            return null;
+        }
+        for (Cookie c : all) {
+            if (c.getName().equals(props.cookieName())) {
+                return c.getValue();
+            }
+        }
+        return null;
     }
 
     private ResponseCookie.ResponseCookieBuilder base(String value) {
