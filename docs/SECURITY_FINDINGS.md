@@ -22,7 +22,7 @@ The Phase 1 Authentication Core MVP demonstrates a mature, defense-in-depth secu
 
 | Finding ID | Severity | Category | Target Component | Status | Production Blocking? |
 |---|---|---|---|---|---|
-| **SEC-001** | MEDIUM | Resource Exhaustion / Hygiene | Refresh Token Storage | OPEN | NO (Phase 1 MVP) / YES (Production) |
+| **SEC-001** | MEDIUM | Resource Exhaustion / Hygiene | Refresh Token Storage | RESOLVED (daily purge job) | NO (Phase 1 MVP) / YES (Production) |
 | **SEC-002** | MEDIUM | Abuse Prevention | Auth Endpoints Rate Limiting | OPEN | NO (Phase 1 MVP) / YES (Production) |
 | **SEC-003** | LOW | Cryptographic Architecture | Token Signing Algorithm | ACCEPTABLE | NO |
 | **SEC-004** | LOW | Informational Leakage | Server Version Headers | OPEN | NO |
