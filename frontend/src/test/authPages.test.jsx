@@ -17,11 +17,13 @@ vi.mock('../services/authService', () => ({
   },
 }));
 
+vi.mock('../services/dashboardService', async () => (await import('./dashboardMocks')).dashboardServiceMock());
 vi.mock('../services/adminService', () => ({
   adminPing: vi.fn(),
   adminListUsers: vi.fn(),
   adminCreateUser: vi.fn(),
   adminResetPassword: vi.fn(),
+  adminSetUserStatus: vi.fn(),
 }));
 
 const member = { id: 1, fullName: 'Jane Doe', email: 'jane@example.com', roles: ['ROLE_GRC_ANALYST'] };
@@ -68,7 +70,7 @@ describe('LoginPage', () => {
     expect(authService.login).not.toHaveBeenCalled();
   });
 
-  it('submits credentials (with rememberMe), shows loading, prevents double submit and lands on profile', async () => {
+  it('submits credentials (with rememberMe), shows loading, prevents double submit and lands on the dashboard', async () => {
     let resolve;
     authService.login.mockReturnValue(new Promise((r) => (resolve = r)));
     authService.getMe.mockResolvedValue(member);
@@ -90,7 +92,7 @@ describe('LoginPage', () => {
     });
 
     resolve({ accessToken: 't', user: member });
-    expect(await screen.findByRole('heading', { name: /your profile/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /welcome back, jane/i })).toBeInTheDocument();
   });
 
   it('shows a generic invalid-credentials message and re-enables the form', async () => {

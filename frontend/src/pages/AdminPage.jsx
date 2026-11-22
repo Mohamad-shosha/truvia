@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { adminCreateUser, adminListUsers, adminResetPassword } from '../services/adminService';
+import { adminCreateUser, adminListUsers, adminResetPassword, adminSetUserStatus } from '../services/adminService';
+import { useAuth } from '../context/AuthContext';
+import { formatDateTime, formatRelative } from '../utils/format';
 import Alert from '../components/Alert';
 import Button from '../components/Button';
 import Spinner from '../components/Spinner';
@@ -30,6 +32,9 @@ const ROLE_LABELS = {
 };
 
 export default function AdminPage() {
+  const { user: currentUser } = useAuth();
+  const [statusBusy, setStatusBusy] = useState(null);
+  const [statusMessage, setStatusMessage] = useState({ variant: 'success', text: '' });
   const [usersState, setUsersState] = useState({ status: 'loading', users: [], error: '' });
 
   // Create User Form State
@@ -116,6 +121,26 @@ export default function AdminPage() {
     }
   }
 
+  // Enable / disable an account. Disabling signs the user out everywhere (enforced by the backend).
+  async function handleToggleStatus(target) {
+    const enable = !target.enabled;
+    if (!enable && !window.confirm(`Disable ${target.fullName}? They will be signed out of every session.`)) return;
+    setStatusBusy(target.id);
+    setStatusMessage({ variant: 'success', text: '' });
+    try {
+      const updated = await adminSetUserStatus(target.id, enable);
+      setUsersState((st) => ({ ...st, users: st.users.map((u) => (u.id === updated.id ? updated : u)) }));
+      setStatusMessage({
+        variant: 'success',
+        text: `${updated.fullName} was ${updated.enabled ? 'enabled' : 'disabled'}.`,
+      });
+    } catch (err) {
+      setStatusMessage({ variant: 'error', text: err.message || 'Failed to update the account status.' });
+    } finally {
+      setStatusBusy(null);
+    }
+  }
+
   // Reset Password Logic
   const resetErrorMsg = resetTouched ? validateNewPassword(resetPasswordValue) : '';
 
@@ -149,6 +174,8 @@ export default function AdminPage() {
           Create employee accounts, assign roles, and manage credentials across the company.
         </p>
       </header>
+
+      {statusMessage.text && <Alert variant={statusMessage.variant}>{statusMessage.text}</Alert>}
 
       {resetSuccess && (
         <Alert variant="success" onClose={() => setResetSuccess('')}>
@@ -244,7 +271,7 @@ export default function AdminPage() {
           <div>
             <h2 className="card__title">Company Directory</h2>
             <p className="muted" style={{ fontSize: '0.88rem', marginTop: '4px' }}>
-              All active employee accounts and their risk roles.
+              Every employee account, its role, status and last sign-in.
             </p>
           </div>
           <Button variant="ghost" onClick={loadUsers} style={{ fontSize: '0.85rem' }}>
@@ -276,7 +303,8 @@ export default function AdminPage() {
                   <th>Email</th>
                   <th>Roles</th>
                   <th>Status</th>
-                  <th>Action</th>
+                  <th>Last sign-in</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -296,11 +324,20 @@ export default function AdminPage() {
                       </div>
                     </td>
                     <td>
-                      <span style={{ color: u.enabled ? 'var(--success)' : 'var(--danger)', fontWeight: 600 }}>
+                      <span className="status-dot" style={{ color: u.enabled ? 'var(--success)' : 'var(--danger)' }}>
                         {u.enabled ? 'Active' : 'Disabled'}
                       </span>
+                      {u.usingInitialPassword && u.enabled && (
+                        <div className="muted" style={{ fontSize: '0.78rem', marginTop: '2px' }}>
+                          Initial password
+                        </div>
+                      )}
+                    </td>
+                    <td className="muted" title={formatDateTime(u.lastLoginAt, 'Never')}>
+                      {u.lastLoginAt ? formatRelative(u.lastLoginAt) : 'Never'}
                     </td>
                     <td>
+                      <div className="row-actions">
                       <Button
                         variant="secondary"
                         style={{ minHeight: '34px', padding: '0 12px', fontSize: '0.82rem' }}
@@ -313,6 +350,19 @@ export default function AdminPage() {
                       >
                         Reset Password
                       </Button>
+                      {u.id !== currentUser.id && (
+                        <Button
+                          variant={u.enabled ? 'ghost' : 'secondary'}
+                          style={{ minHeight: '34px', padding: '0 12px', fontSize: '0.82rem' }}
+                          loading={statusBusy === u.id}
+                          disabled={statusBusy !== null}
+                          aria-label={`${u.enabled ? 'Disable' : 'Enable'} ${u.fullName}`}
+                          onClick={() => handleToggleStatus(u)}
+                        >
+                          {u.enabled ? 'Disable' : 'Enable'}
+                        </Button>
+                      )}
+                      </div>
                     </td>
                   </tr>
                 ))}

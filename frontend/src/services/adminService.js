@@ -18,6 +18,12 @@ export async function adminCreateUser({ fullName, email, password, role }) {
   return res.data;
 }
 
+/** Enables or disables a company user; disabling signs them out everywhere (ROLE_ADMIN only). */
+export async function adminSetUserStatus(userId, enabled) {
+  const res = await http.patch(`/api/admin/users/${userId}/status`, { enabled });
+  return res.data;
+}
+
 /** Resets a company user's password (ROLE_ADMIN only). */
 export async function adminResetPassword(userId, newPassword) {
   const res = await http.post(`/api/admin/users/${userId}/reset-password`, { newPassword });

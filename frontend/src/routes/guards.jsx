@@ -28,7 +28,7 @@ export function PublicOnlyRoute() {
   const location = useLocation();
   if (status === 'loading') return <FullPageSpinner label="Loading" />;
   if (status === 'authenticated') {
-    const target = location.state?.from?.pathname || '/profile';
+    const target = location.state?.from?.pathname || '/dashboard';
     return <Navigate to={target} replace />;
   }
   return <Outlet />;
