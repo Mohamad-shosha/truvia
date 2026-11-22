@@ -277,6 +277,31 @@ db/migration/
 
 ## 🚀 Getting Started
 
+### ⚡ Quick Start: whole stack in Docker
+
+```bash
+cp .env.example .env        # then set MYSQL_*, JWT_SECRET and BOOTSTRAP_ADMIN_* values
+docker compose --env-file .env -f docker/docker-compose.yml up -d --build
+docker compose --env-file .env -f docker/docker-compose.yml ps   # wait until backend is (healthy)
+```
+
+| Service | URL | Notes |
+|---|---|---|
+| App (React + nginx) | http://localhost:5173 | nginx proxies `/api/*` to the backend, so the browser talks to one origin |
+| Backend API | http://localhost:8080 | Swagger UI at `/swagger-ui.html` |
+| MySQL | `127.0.0.1:${MYSQL_HOST_PORT}` | Data persists in the `nextrisk_mysql_data` volume |
+
+Sign in with the `BOOTSTRAP_ADMIN_EMAIL` / `BOOTSTRAP_ADMIN_PASSWORD` admin (created on first start if no admin exists), then create employee accounts from **Users & access**.
+
+Useful commands:
+```bash
+docker compose --env-file .env -f docker/docker-compose.yml logs -f backend     # follow backend logs
+docker compose --env-file .env -f docker/docker-compose.yml up -d --build backend frontend   # rebuild after code changes
+docker compose --env-file .env -f docker/docker-compose.yml down                # stop (keeps data)
+```
+
+> Open the app at `http://localhost:5173`, not `127.0.0.1`: the refresh cookie and CORS allowlist are bound to `localhost`.
+
 ### Prerequisites
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Docker Compose v2+)
@@ -334,8 +359,8 @@ mvn spring-boot:run
 
 #### Option B: Running in Docker (No local JDK needed)
 ```bash
-# Build and run backend container attached to the Docker network:
-docker compose --env-file .env -f docker/docker-compose.yml --profile app up -d --build
+# Build and run the whole stack (MySQL + backend + frontend):
+docker compose --env-file .env -f docker/docker-compose.yml up -d --build
 ```
 
 - API Base URL: `http://localhost:8080`
