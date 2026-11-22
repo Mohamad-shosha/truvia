@@ -300,7 +300,7 @@ docker compose --env-file .env -f docker/docker-compose.yml up -d --build backen
 docker compose --env-file .env -f docker/docker-compose.yml down                # stop (keeps data)
 ```
 
-> Open the app at `http://localhost:5173`, not `127.0.0.1`: the refresh cookie and CORS allowlist are bound to `localhost`.
+> In Docker the browser only talks to nginx (same origin), so `http://localhost:5173` and `http://127.0.0.1:5173` both work. When running the Vite dev server outside Docker, use `localhost` (it must match `CORS_ALLOWED_ORIGINS`).
 
 ### Prerequisites
 
