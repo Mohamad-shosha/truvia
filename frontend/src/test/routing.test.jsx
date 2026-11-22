@@ -51,10 +51,10 @@ describe('auth initialization and protected routes', () => {
 
     expect(screen.getByRole('status', { name: /restoring your session/i })).toBeInTheDocument();
     expect(screen.queryByText(/your profile/i)).not.toBeInTheDocument();
-    expect(screen.queryByRole('heading', { name: 'Log In' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Welcome back' })).not.toBeInTheDocument();
 
     reject({ status: 401 });
-    expect(await screen.findByRole('heading', { name: 'Log In' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Welcome back' })).toBeInTheDocument();
     expect(authService.getMe).not.toHaveBeenCalled();
   });
 
@@ -116,13 +116,13 @@ describe('role-aware navigation', () => {
 });
 
 describe('logout and session expiry', () => {
-  it('logout clears the session and tells the user it was revoked on the server', async () => {
+  it('logout clears the session without showing a signed-out notice', async () => {
     signedIn(member);
     authService.logout.mockResolvedValue({ serverRevoked: true });
     renderApp('/profile');
     await userEvent.click(await screen.findByRole('button', { name: /sign out/i }));
-    expect(await screen.findByRole('heading', { name: 'Log In' })).toBeInTheDocument();
-    expect(screen.getByText(/you have been signed out/i)).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Welcome back' })).toBeInTheDocument();
+    expect(screen.queryByText(/you have been signed out/i)).not.toBeInTheDocument();
   });
 
   it('logout is honest when the server could not be reached', async () => {
@@ -141,7 +141,7 @@ describe('logout and session expiry', () => {
     // Exactly what the API client calls after a refresh is rejected while signed in.
     act(() => notifySessionExpired());
 
-    expect(await screen.findByRole('heading', { name: 'Log In' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Welcome back' })).toBeInTheDocument();
     expect(screen.getByText(/your session has expired/i)).toBeInTheDocument();
     expect(screen.queryByText('Jane Doe', { selector: '#profile-name' })).not.toBeInTheDocument();
   });

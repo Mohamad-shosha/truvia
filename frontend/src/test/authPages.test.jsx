@@ -61,7 +61,7 @@ describe('LoginPage', () => {
 
   it('rejects malformed emails before submitting', async () => {
     renderAt('/login');
-    await userEvent.type(await screen.findByLabelText('Email Address'), 'not-an-email');
+    await userEvent.type(await screen.findByLabelText('Work Email'), 'not-an-email');
     await userEvent.type(screen.getByLabelText('Password'), 'whatever1');
     await userEvent.click(screen.getByRole('button', { name: /sign in/i }));
     expect(await screen.findByText('Enter a valid email address')).toBeInTheDocument();
@@ -74,7 +74,7 @@ describe('LoginPage', () => {
     authService.getMe.mockResolvedValue(member);
     renderAt('/login');
 
-    await userEvent.type(await screen.findByLabelText('Email Address'), '  jane@example.com ');
+    await userEvent.type(await screen.findByLabelText('Work Email'), '  jane@example.com ');
     await userEvent.type(screen.getByLabelText('Password'), 'Str0ng-Passphrase');
     await userEvent.click(screen.getByLabelText('Remember me'));
     const button = screen.getByRole('button', { name: /sign in/i });
@@ -96,7 +96,7 @@ describe('LoginPage', () => {
   it('shows a generic invalid-credentials message and re-enables the form', async () => {
     authService.login.mockRejectedValue({ status: 401, message: 'Invalid email or password' });
     renderAt('/login');
-    await userEvent.type(await screen.findByLabelText('Email Address'), 'jane@example.com');
+    await userEvent.type(await screen.findByLabelText('Work Email'), 'jane@example.com');
     await userEvent.type(screen.getByLabelText('Password'), 'wrong-password1');
     await userEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
@@ -111,7 +111,7 @@ describe('LoginPage', () => {
       message: 'Unable to reach the server. Check your connection and try again.',
     });
     renderAt('/login');
-    await userEvent.type(await screen.findByLabelText('Email Address'), 'jane@example.com');
+    await userEvent.type(await screen.findByLabelText('Work Email'), 'jane@example.com');
     await userEvent.type(screen.getByLabelText('Password'), 'Str0ng-Passphrase');
     await userEvent.click(screen.getByRole('button', { name: /sign in/i }));
     expect(await screen.findByRole('alert')).toHaveTextContent(/unable to reach the server/i);

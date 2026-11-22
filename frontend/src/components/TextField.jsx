@@ -55,6 +55,7 @@ export default function TextField({
             aria-pressed={reveal}
           >
             <EyeIcon off={reveal} />
+            <span className="field__toggle-label">{reveal ? 'Hide' : 'Show'}</span>
           </button>
         )}
       </div>

@@ -1,5 +1,5 @@
 {
-  "name": "nextrisk-frontend",
+  "name": "truvia-frontend",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -17,11 +17,13 @@
     "react-router-dom": "^6.28.0"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.5",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.0.1",
     "@testing-library/user-event": "^14.5.2",
     "@vitejs/plugin-react": "^4.3.3",
     "jsdom": "^25.0.1",
+    "tailwindcss": "^4.3.5",
     "vite": "^5.4.10",
     "vitest": "^2.1.4"
   }

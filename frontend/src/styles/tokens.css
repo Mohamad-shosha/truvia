@@ -1,0 +1,289 @@
+/* =================================
+   TRUVIA DESIGN TOKENS
+================================= */
+
+:root {
+  color-scheme: light;
+
+  /* Compatibility aliases for existing index.css styles */
+  --green-50: var(--bg-accent-subtle);
+  --green-100: var(--border-default);
+  --green-400: #34d399;
+  --green-500: var(--accent-primary);
+  --green-600: var(--accent-primary);
+  --green-700: var(--accent-primary-pressed);
+
+  --bg: var(--bg-page);
+  --bg-grad-1: var(--bg-accent-subtle);
+  --bg-grad-2: var(--bg-surface);
+  --surface: var(--bg-surface);
+  --surface-muted: var(--bg-surface-raised);
+  --text: var(--text-primary);
+  --text-muted: var(--text-secondary);
+  --border: var(--border-default);
+  --primary: var(--accent-primary);
+  --primary-hover: var(--accent-primary-hover);
+  --primary-contrast: var(--text-on-accent);
+  --ring: rgb(23 109 91 / 35%);
+  --danger: var(--danger-primary);
+  --danger-bg: var(--status-critical-bg);
+  --warning: var(--status-medium-fg);
+  --warning-bg: var(--status-medium-bg);
+  --info: var(--status-info-fg);
+  --info-bg: var(--status-info-bg);
+  --success: var(--status-low-fg);
+  --success-bg: var(--status-low-bg);
+  --shadow: var(--shadow-raised);
+  --logo-inner: var(--bg-surface);
+  --radius: var(--radius-xl-token);
+
+  /* Background */
+  --bg-page: #f3f5f3;
+  --bg-surface: #fafbf9;
+  --bg-surface-raised: #eaeeeb;
+  --bg-sidebar: #ebf0ed;
+  --bg-accent-subtle: #e0f0ea;
+  --bg-hover: #e6ece7;
+  --bg-selected: #daede3;
+  --bg-disabled: #e7ebe7;
+  --bg-overlay: rgb(10 18 33 / 50%);
+  --bg-skeleton: #dce4de;
+
+  /* Border */
+  --border-default: #d2dcd6;
+  --border-input: #7a8f83;
+  --border-sidebar: #d2dcd6;
+  --border-strong: #647c70;
+
+  /* Text */
+  --text-primary: #20332f;
+  --text-secondary: #465b55;
+  --text-muted: #596d65;
+  --text-sidebar: #20332f;
+  --text-sidebar-muted: #596d65;
+  --text-accent: #176d5b;
+  --text-on-accent: #fafcfa;
+  --text-on-danger: #ffffff;
+  --text-disabled: #a3adba;
+
+  /* Accent */
+  --accent-primary: #257966;
+  --accent-primary-hover: #1e6958;
+  --accent-primary-pressed: #185747;
+  --accent-focus-ring: #176d5b;
+
+  /* Danger */
+  --danger-primary: #d23246;
+  --danger-primary-hover: #b3283a;
+
+  /* Status */
+  --status-critical-bg: #fde7ea;
+  --status-critical-fg: #a91b2e;
+  --status-high-bg: #ffebdd;
+  --status-high-fg: #a04210;
+  --status-medium-bg: #fff1d1;
+  --status-medium-fg: #8a5200;
+  --status-low-bg: #dff7ea;
+  --status-low-fg: #14703f;
+  --status-info-bg: #e3ecfb;
+  --status-info-fg: #1b3fa8;
+
+  /* Heatmap */
+  --heat-low: #bdefd8;
+  --heat-medium: #ffe4a8;
+  --heat-high: #ffc38f;
+  --heat-critical: #f6a4ae;
+  --heat-text: #0a1020;
+  --heat-zero: #eaeeeb;
+
+  /* Charts */
+  --chart-line: #257966;
+  --chart-grid: #d2dcd6;
+  --chart-series-2: #184fd4;
+  --chart-series-3: #c77700;
+  --chart-series-4: #7f68a0;
+  --chart-bar-fill: #257966;
+  --chart-bar-track: #dfe7e1;
+
+  /* Brand */
+  --brand-navy: #010d1d;
+
+  /* Typography */
+  --font-heading: "Space Grotesk", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  /* Radius */
+  --radius-sm-token: 4px;
+  --radius-md-token: 8px;
+  --radius-lg-token: 10px;
+  --radius-xl-token: 14px;
+  --radius-pill-token: 999px;
+
+  /* Layout */
+  --topbar-height: 56px;
+  --sidebar-width: 240px;
+  --sidebar-collapsed-width: 64px;
+  --content-max-width: 1152px;
+  --input-height: 40px;
+
+  /* Focus */
+  --focus-shadow: 0 0 0 3px rgb(20 184 158 / 60%);
+
+  /* Shadows */
+  --shadow-raised: 0 1px 2px rgb(15 23 41 / 6%);
+  --shadow-popover: 0 8px 24px rgb(15 23 41 / 12%);
+  --shadow-dialog: 0 16px 40px rgb(15 23 41 / 20%);
+}
+
+/* =================================
+   DARK THEME
+================================= */
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --green-50: var(--bg-accent-subtle);
+  --green-100: var(--border-default);
+  --green-400: #34d399;
+  --green-500: var(--accent-primary);
+  --green-600: var(--accent-primary);
+  --green-700: var(--accent-primary-pressed);
+
+  --bg: var(--bg-page);
+  --bg-grad-1: var(--bg-accent-subtle);
+  --bg-grad-2: var(--bg-surface);
+  --surface: var(--bg-surface);
+  --surface-muted: var(--bg-surface-raised);
+  --text: var(--text-primary);
+  --text-muted: var(--text-secondary);
+  --border: var(--border-default);
+  --primary: var(--accent-primary);
+  --primary-hover: var(--accent-primary-hover);
+  --primary-contrast: var(--text-on-accent);
+  --ring: rgb(47 227 195 / 35%);
+  --danger: var(--danger-primary);
+  --danger-bg: var(--status-critical-bg);
+  --warning: var(--status-medium-fg);
+  --warning-bg: var(--status-medium-bg);
+  --info: var(--status-info-fg);
+  --info-bg: var(--status-info-bg);
+  --success: var(--status-low-fg);
+  --success-bg: var(--status-low-bg);
+  --shadow: var(--shadow-raised);
+  --logo-inner: var(--bg-surface);
+  --radius: var(--radius-xl-token);
+
+  --bg-page: #040c1c;
+  --bg-surface: #061427;
+  --bg-surface-raised: #0a1b31;
+  --bg-sidebar: #030b1a;
+  --bg-accent-subtle: #03202e;
+  --bg-hover: #0d2138;
+  --bg-selected: #03202e;
+  --bg-disabled: #0a1628;
+  --bg-overlay: rgb(0 5 18 / 72%);
+  --bg-skeleton: #10243b;
+
+  --border-default: #12243a;
+  --border-input: #667993;
+  --border-sidebar: #0f2036;
+  --border-strong: #4a5c74;
+
+  --text-primary: #f4fafb;
+  --text-secondary: #b5c0d0;
+  --text-muted: #8392a8;
+  --text-sidebar: #ccdce9;
+  --text-sidebar-muted: #8ea2b6;
+  --text-accent: #22e2be;
+  --text-on-accent: #ffffff;
+  --text-on-danger: #ffffff;
+  --text-disabled: #5b6e86;
+
+  --accent-primary: #0f7b69;
+  --accent-primary-hover: #139483;
+  --accent-primary-pressed: #0b6657;
+  --accent-focus-ring: #2fe3c3;
+
+  --danger-primary: #d23246;
+  --danger-primary-hover: #bf2d40;
+
+  --status-critical-bg: #3b1219;
+  --status-critical-fg: #ff8e98;
+  --status-high-bg: #3c2210;
+  --status-high-fg: #ffa45c;
+  --status-medium-bg: #3a2c0c;
+  --status-medium-fg: #ffc85a;
+  --status-low-bg: #0f3324;
+  --status-low-fg: #5be39a;
+  --status-info-bg: #14264a;
+  --status-info-fg: #8db2ff;
+
+  --heat-low: #0f4d36;
+  --heat-medium: #5b4513;
+  --heat-high: #6b3a14;
+  --heat-critical: #6a1f27;
+  --heat-text: #f4fafb;
+  --heat-zero: #0a1b31;
+
+  --chart-line: #22e2be;
+  --chart-grid: #10243b;
+  --chart-series-2: #6c95ff;
+  --chart-series-3: #ffb04d;
+  --chart-series-4: #b49cff;
+  --chart-bar-fill: #22e2be;
+  --chart-bar-track: #10243b;
+
+  --brand-navy: #010d1d;
+
+  --focus-shadow: 0 0 0 3px rgb(20 184 158 / 60%);
+  --shadow-raised: 0 1px 2px rgb(0 0 0 / 6%);
+  --shadow-popover: 0 8px 24px rgb(0 0 0 / 12%);
+  --shadow-dialog: 0 16px 40px rgb(0 0 0 / 20%);
+}
+
+/* =================================
+   TAILWIND V4 MAPPING
+================================= */
+
+@theme inline {
+  --color-bg-page: var(--bg-page);
+  --color-bg-surface: var(--bg-surface);
+  --color-bg-surface-raised: var(--bg-surface-raised);
+  --color-bg-sidebar: var(--bg-sidebar);
+  --color-bg-accent-subtle: var(--bg-accent-subtle);
+  --color-bg-hover: var(--bg-hover);
+  --color-bg-selected: var(--bg-selected);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-accent: var(--text-accent);
+
+  --color-border-default: var(--border-default);
+  --color-border-input: var(--border-input);
+
+  --color-accent-primary: var(--accent-primary);
+  --color-accent-hover: var(--accent-primary-hover);
+
+  --color-status-critical-bg: var(--status-critical-bg);
+  --color-status-critical-fg: var(--status-critical-fg);
+  --color-status-high-bg: var(--status-high-bg);
+  --color-status-high-fg: var(--status-high-fg);
+  --color-status-medium-bg: var(--status-medium-bg);
+  --color-status-medium-fg: var(--status-medium-fg);
+  --color-status-low-bg: var(--status-low-bg);
+  --color-status-low-fg: var(--status-low-fg);
+  --color-status-info-bg: var(--status-info-bg);
+  --color-status-info-fg: var(--status-info-fg);
+
+  --font-display: var(--font-heading);
+  --font-ui: var(--font-body);
+  --font-code: var(--font-mono);
+
+  --radius-sm: var(--radius-sm-token);
+  --radius-md: var(--radius-md-token);
+  --radius-lg: var(--radius-lg-token);
+  --radius-xl: var(--radius-xl-token);
+  --radius-pill: var(--radius-pill-token);
+}

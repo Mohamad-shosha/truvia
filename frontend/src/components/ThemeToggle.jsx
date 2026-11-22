@@ -14,7 +14,7 @@ export function initTheme() {
   return theme;
 }
 
-export default function ThemeToggle() {
+export default function ThemeToggle({ className = "" }) {
   const [theme, setTheme] = useState(() => document.documentElement.dataset.theme || 'light');
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export default function ThemeToggle() {
     <button
       type="button"
       id="theme-toggle"
-      className="icon-btn"
+      className={`icon-btn ${className}`.trim()}
       onClick={() => setTheme(next)}
       aria-label={`Switch to ${next} mode`}
       title={`Switch to ${next} mode`}

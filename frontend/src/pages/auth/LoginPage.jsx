@@ -4,7 +4,7 @@ import AuthLayout from '../../components/AuthLayout';
 import TextField from '../../components/TextField';
 import Button from '../../components/Button';
 import Alert from '../../components/Alert';
-import { ArrowIcon, LockIcon, MailIcon } from '../../components/icons';
+import { LockIcon, MailIcon } from '../../components/icons';
 import { useAuth } from '../../context/AuthContext';
 import { hasErrors, validateEmail, validateRequired } from '../../utils/validation';
 
@@ -56,30 +56,31 @@ export default function LoginPage() {
   return (
     <AuthLayout>
       <header className="auth-card__head">
-        <h1 className="auth-card__title">Log In</h1>
-        <span className="auth-card__rule" />
-        <h2 className="auth-card__welcome">Welcome Back</h2>
-        <p className="auth-card__sub">Sign in to your TRUVIA account</p>
+        <div className="auth-card__brand">
+          <img src="/truvia-brand-mark.png" alt="" width="26" height="26" />
+          <span>TRUVIA</span>
+        </div>
+        <h1 className="auth-card__welcome">Welcome back</h1>
+        <p className="auth-card__sub">Sign in to your TRUVIA employee workspace.</p>
       </header>
 
-      <div className="stack">
+      <div className="auth-card__alerts stack">
         {(state.expired || sessionExpired) && <Alert variant="warning">Your session has expired. Please sign in again.</Alert>}
         {state.loggedOut && !state.serverRevoked && (
           <Alert variant="warning">
             You were signed out on this device, but we could not confirm the server session was revoked.
           </Alert>
         )}
-        {state.loggedOut && state.serverRevoked && <Alert variant="success">You have been signed out.</Alert>}
         {serverError && <Alert id="login-error">{serverError}</Alert>}
       </div>
 
-      <form onSubmit={onSubmit} noValidate className="form" aria-label="Log in">
+      <form onSubmit={onSubmit} noValidate className="auth-form" aria-label="Log in">
         <TextField
-          label="Email Address"
+          label="Work Email"
           name="email"
           type="email"
           autoComplete="email"
-          placeholder="Email Address"
+          placeholder="you@truvia.com"
           value={values.email}
           onChange={set('email')}
           onBlur={blur('email')}
@@ -106,18 +107,15 @@ export default function LoginPage() {
             <input type="checkbox" name="rememberMe" checked={values.rememberMe} onChange={set('rememberMe')} disabled={submitting} />
             <span>Remember me</span>
           </label>
+          <button type="button" className="auth-forgot">Forgot Password?</button>
         </div>
 
-        <Button id="login-submit" type="submit" loading={submitting} icon={<ArrowIcon />}>
+        <Button id="login-submit" type="submit" loading={submitting}>
           {submitting ? 'Signing in…' : 'Sign In'}
         </Button>
       </form>
 
-      <footer className="auth-card__foot">
-        <span className="text-muted" style={{ fontSize: '0.82rem' }}>
-          Account creation and password recovery are managed by your company administrator.
-        </span>
-      </footer>
+      <p className="auth-card__security">For authorized employees only. Never share your password.</p>
     </AuthLayout>
   );
 }

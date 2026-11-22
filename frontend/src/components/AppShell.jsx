@@ -1,9 +1,9 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import Logo from './Logo';
-import ThemeToggle from './ThemeToggle';
-import Button from './Button';
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import Logo from "./Logo";
+import ThemeToggle from "./ThemeToggle";
+import Button from "./Button";
 
 export default function AppShell() {
   const { user, logout, hasRole } = useAuth();
@@ -12,37 +12,62 @@ export default function AppShell() {
 
   async function handleLogout() {
     setSigningOut(true);
-    const { serverRevoked } = await logout();
-    navigate('/login', { replace: true, state: { loggedOut: true, serverRevoked } });
+
+    try {
+      const { serverRevoked } = await logout();
+      navigate("/login", {
+        replace: true,
+        state: { loggedOut: true, serverRevoked },
+      });
+    } finally {
+      setSigningOut(false);
+    }
   }
 
   return (
-    <div className="shell">
-      <header className="shell__header">
-        <Logo size={32} />
-        <nav aria-label="Primary" className="shell__nav">
-          <NavLink to="/profile" id="nav-profile" className="shell__link">
+    <div className="app-layout">
+      <aside className="app-sidebar">
+        <div className="app-sidebar__logo">
+          <Logo size={32} />
+        </div>
+
+        <nav aria-label="Main navigation" className="app-sidebar__nav">
+          <NavLink to="/profile" className="app-sidebar__link">
             Profile
           </NavLink>
-          {hasRole('ROLE_ADMIN') && (
-            <NavLink to="/admin" id="nav-admin" className="shell__link">
+
+          {hasRole("ROLE_ADMIN") && (
+            <NavLink to="/admin" className="app-sidebar__link">
               Administration
             </NavLink>
           )}
         </nav>
-        <div className="shell__user">
-          <ThemeToggle />
-          <span className="shell__name" title={user.email}>
-            {user.fullName}
-          </span>
-          <Button id="logout-button" variant="ghost" onClick={handleLogout} loading={signingOut}>
-            Sign out
-          </Button>
-        </div>
-      </header>
-      <main className="shell__main">
-        <Outlet />
-      </main>
+      </aside>
+
+      <div className="app-content">
+        <header className="app-topbar">
+          <div className="app-topbar__user">
+            <span className="app-topbar__name" title={user.email}>
+              {user.fullName}
+            </span>
+
+            <ThemeToggle />
+
+            <Button
+              id="logout-button"
+              variant="ghost"
+              onClick={handleLogout}
+              loading={signingOut}
+            >
+              Sign out
+            </Button>
+          </div>
+        </header>
+
+        <main className="app-main">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }
