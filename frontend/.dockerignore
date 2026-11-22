@@ -2,3 +2,7 @@ node_modules
 dist
 .vite
 .git
+# Local env files must not leak into the image (they would point the SPA at the wrong API URL).
+.env
+.env.*
+!.env.example

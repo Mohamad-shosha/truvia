@@ -53,6 +53,9 @@ public abstract class AbstractIntegrationTest {
 
     @BeforeEach
     void cleanTables() {
+        jdbc.update("DELETE FROM risks");
+        jdbc.update("DELETE FROM risk_snapshots");
+        jdbc.update("DELETE FROM activity_events");
         jdbc.update("DELETE FROM refresh_tokens");
         jdbc.update("DELETE FROM login_events");
         jdbc.update("DELETE FROM user_roles");

@@ -55,8 +55,9 @@ public class AdminUserController {
     @ApiResponse(responseCode = "201", description = "User created")
     @ApiResponse(responseCode = "400", description = "Validation failed", content = @Content(schema = @Schema(implementation = ApiError.class)))
     @ApiResponse(responseCode = "409", description = "Email already registered", content = @Content(schema = @Schema(implementation = ApiError.class)))
-    public ResponseEntity<AdminUserResponse> createUser(@Valid @RequestBody CreateUserRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.createUserByAdmin(request));
+    public ResponseEntity<AdminUserResponse> createUser(@AuthenticationPrincipal Jwt jwt,
+            @Valid @RequestBody CreateUserRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.createUserByAdmin(jwt.getSubject(), request));
     }
 
     @PostMapping("/{id}/reset-password")
@@ -65,9 +66,10 @@ public class AdminUserController {
     @ApiResponse(responseCode = "200", description = "Password reset successfully")
     @ApiResponse(responseCode = "404", description = "User not found")
     public ResponseEntity<Map<String, String>> resetPassword(
+            @AuthenticationPrincipal Jwt jwt,
             @PathVariable Long id,
             @Valid @RequestBody ResetPasswordRequest request) {
-        authService.adminResetPassword(id, request);
+        authService.adminResetPassword(jwt.getSubject(), id, request);
         return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
     }
 

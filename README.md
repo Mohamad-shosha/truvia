@@ -243,6 +243,26 @@ All requests and responses use `application/json`. Detailed interactive OpenAPI 
 | `GET` | `/api/admin/dashboard` | `ROLE_ADMIN` | Account totals, users per role, live sessions, 14-day sign-in activity (UTC days), accounts never signed in / still on an admin-set password, newest accounts |
 | `GET` | `/api/dashboard/team` | `ROLE_CISO`, `ROLE_ADMIN` | Enabled accounts per role |
 
+### Risk Register Endpoints
+
+| Method | Endpoint | Who | Notes |
+|---|---|---|---|
+| `GET` | `/api/risks` | Admin, CISO, GRC, SOC | Whole register with inherent/residual scores and levels |
+| `GET` | `/api/risks/{id}` | Admin, CISO, GRC, SOC | |
+| `POST` | `/api/risks` | CISO, GRC | Assigns a code (`RSK-007`); residual may not exceed inherent |
+| `PUT` | `/api/risks/{id}` | CISO, GRC | Status changes are logged to the activity feed |
+| `DELETE` | `/api/risks/{id}` | CISO, GRC | |
+| `GET` | `/api/risks/overview?days=30` | Admin, CISO, GRC, SOC | KPIs + value `days` ago (7/30/90), score trend, 5×5 heat map, status & inherent-level breakdowns, top 5 |
+| `GET` | `/api/risks/export` | Admin, CISO, GRC, SOC | CSV download (formula-injection safe) |
+| `GET` | `/api/activity?limit=8` | Admin, CISO, GRC, SOC | Recent risk and account activity |
+
+Scoring: likelihood × impact (1–25) → **Low** 1–4 · **Medium** 5–9 · **High** 10–15 · **Critical** 16–25. The organisational risk score is the average residual score of active risks, normalised to 0–100, snapshotted daily for the trend.
+
+**Sample data:** with `DEMO_DATA_ENABLED=true` (the Docker Compose default) an *empty* register is filled with 24 sample risks and 90 days of history, all flagged `sample = 1` and labelled “Sample” in the UI. Turn it off with `DEMO_DATA_ENABLED=false` in `.env`, and remove existing sample rows with:
+```sql
+DELETE FROM risks WHERE sample = 1; DELETE FROM risk_snapshots WHERE sample = 1; DELETE FROM activity_events WHERE sample = 1;
+```
+
 ### Dashboard: who sees what (`/dashboard`, the landing page after sign-in)
 
 | Section | Admin | CISO | GRC / SOC / Pentester |
@@ -250,7 +270,8 @@ All requests and responses use `application/json`. Detailed interactive OpenAPI 
 | My workspace (previous sign-in, sessions, password status, reminder) | ✅ | ✅ | ✅ |
 | Active sessions (sign out one / all others) | ✅ | ✅ | ✅ |
 | Platform overview (accounts, sign-in chart, roles, attention lists) | ✅ | — | — |
-| Executive view (planned KPIs, security team) | — | ✅ | — |
+| Risk overview (KPIs, trend, heat map, rings, top risks, activity) | ✅ | ✅ | GRC, SOC ✅ · Pentester — |
+| Security team composition | — | ✅ | — |
 | Your modules (available + planned with phase) | ✅ | ✅ | ✅ |
 
 ---
@@ -264,7 +285,8 @@ db/migration/
 ├── V1__create_users_and_roles.sql       # Users, roles, and user_roles join table
 ├── V2__seed_roles.sql                   # Idempotent seeding of the 5 platform roles
 ├── V3__create_refresh_tokens.sql        # Refresh token records with family ID & hash
-└── V4__login_tracking_and_password_age.sql # users.last_login_at / password_changed_at + login_events
+├── V4__login_tracking_and_password_age.sql # users.last_login_at / password_changed_at + login_events
+└── V5__risk_register_and_activity.sql   # risks, risk_snapshots, activity_events
 ```
 
 ### Table Relationships
@@ -276,6 +298,31 @@ db/migration/
 ---
 
 ## 🚀 Getting Started
+
+### ⚡ Quick Start: whole stack in Docker
+
+```bash
+cp .env.example .env        # then set MYSQL_*, JWT_SECRET and BOOTSTRAP_ADMIN_* values
+docker compose --env-file .env -f docker/docker-compose.yml up -d --build
+docker compose --env-file .env -f docker/docker-compose.yml ps   # wait until backend is (healthy)
+```
+
+| Service | URL | Notes |
+|---|---|---|
+| App (React + nginx) | http://localhost:5173 | nginx proxies `/api/*` to the backend, so the browser talks to one origin |
+| Backend API | http://localhost:8080 | Swagger UI at `/swagger-ui.html` |
+| MySQL | `127.0.0.1:${MYSQL_HOST_PORT}` | Data persists in the `nextrisk_mysql_data` volume |
+
+Sign in with the `BOOTSTRAP_ADMIN_EMAIL` / `BOOTSTRAP_ADMIN_PASSWORD` admin (created on first start if no admin exists), then create employee accounts from **Users & access**.
+
+Useful commands:
+```bash
+docker compose --env-file .env -f docker/docker-compose.yml logs -f backend     # follow backend logs
+docker compose --env-file .env -f docker/docker-compose.yml up -d --build backend frontend   # rebuild after code changes
+docker compose --env-file .env -f docker/docker-compose.yml down                # stop (keeps data)
+```
+
+> In Docker the browser only talks to nginx (same origin), so `http://localhost:5173` and `http://127.0.0.1:5173` both work. When running the Vite dev server outside Docker, use `localhost` (it must match `CORS_ALLOWED_ORIGINS`).
 
 ### Prerequisites
 
@@ -334,8 +381,8 @@ mvn spring-boot:run
 
 #### Option B: Running in Docker (No local JDK needed)
 ```bash
-# Build and run backend container attached to the Docker network:
-docker compose --env-file .env -f docker/docker-compose.yml --profile app up -d --build
+# Build and run the whole stack (MySQL + backend + frontend):
+docker compose --env-file .env -f docker/docker-compose.yml up -d --build
 ```
 
 - API Base URL: `http://localhost:8080`

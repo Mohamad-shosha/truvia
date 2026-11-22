@@ -64,8 +64,10 @@ class DashboardIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.modules[*].key", hasItem("compliance")))
                 .andExpect(jsonPath("$.modules[*].key", not(hasItem("users"))))
                 .andExpect(jsonPath("$.modules[*].key", not(hasItem("reports"))))
-                .andExpect(jsonPath("$.modules[0].status").value("PLANNED"))
-                .andExpect(jsonPath("$.modules[0].plannedFor").isNotEmpty());
+                .andExpect(jsonPath("$.modules[0].key").value("risks"))
+                .andExpect(jsonPath("$.modules[0].status").value("AVAILABLE"))
+                .andExpect(jsonPath("$.modules[1].status").value("PLANNED"))
+                .andExpect(jsonPath("$.modules[1].plannedFor").isNotEmpty());
     }
 
     @Test

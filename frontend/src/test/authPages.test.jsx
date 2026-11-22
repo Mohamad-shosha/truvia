@@ -17,6 +17,7 @@ vi.mock('../services/authService', () => ({
   },
 }));
 
+vi.mock('../services/riskService', async () => (await import('./dashboardMocks')).riskServiceMock());
 vi.mock('../services/dashboardService', async () => (await import('./dashboardMocks')).dashboardServiceMock());
 vi.mock('../services/adminService', () => ({
   adminPing: vi.fn(),
@@ -92,7 +93,7 @@ describe('LoginPage', () => {
     });
 
     resolve({ accessToken: 't', user: member });
-    expect(await screen.findByRole('heading', { name: /welcome back, jane/i })).toBeInTheDocument();
+    expect(await screen.findByText(/welcome back, jane/i)).toBeInTheDocument();
   });
 
   it('shows a generic invalid-credentials message and re-enables the form', async () => {

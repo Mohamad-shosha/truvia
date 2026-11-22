@@ -20,6 +20,7 @@ import { niceMax } from '../components/dashboard/TrendChart';
 vi.mock('../services/authService', () => ({
   authService: { login: vi.fn(), getMe: vi.fn(), refresh: vi.fn(), logout: vi.fn(), changePassword: vi.fn() },
 }));
+vi.mock('../services/riskService', async () => (await import('./dashboardMocks')).riskServiceMock());
 vi.mock('../services/dashboardService', async () => (await import('./dashboardMocks')).dashboardServiceMock());
 vi.mock('../services/adminService', () => ({
   adminPing: vi.fn(),
@@ -50,7 +51,7 @@ describe('dashboard: shared workspace', () => {
   it('greets the analyst and shows their security summary and planned modules only', async () => {
     renderAs(member);
 
-    expect(await screen.findByRole('heading', { name: /welcome back, jane/i })).toBeInTheDocument();
+    expect(await screen.findByText(/welcome back, jane/i)).toBeInTheDocument();
     expect(await screen.findByText('Previous sign-in')).toBeInTheDocument();
     expect(within(document.getElementById('stat-sessions')).getByText('1')).toBeInTheDocument();
     expect(within(document.getElementById('stat-password')).getByText('Your own')).toBeInTheDocument();
@@ -137,11 +138,10 @@ describe('dashboard: role-specific sections', () => {
     expect(getTeam).not.toHaveBeenCalled();
   });
 
-  it('shows the CISO the executive view with planned KPIs and the security team', async () => {
+  it('shows the CISO the risk overview, planned compliance KPIs and the security team', async () => {
     renderAs(ciso);
 
-    expect(await screen.findByRole('heading', { name: /executive view/i })).toBeInTheDocument();
-    expect(screen.getByText('Organisational risk score')).toBeInTheDocument();
+    expect(await screen.findByText('Compliance score')).toBeInTheDocument();
     expect(screen.getAllByText(/arrives with phase/i).length).toBeGreaterThan(0);
 
     const teamPanel = screen.getByRole('region', { name: /security team/i });
@@ -152,7 +152,7 @@ describe('dashboard: role-specific sections', () => {
 
   it('hides the administration link from non-admins and shows it to admins', async () => {
     renderAs(member);
-    await screen.findByRole('heading', { name: /welcome back/i });
+    await screen.findByText(/welcome back/i);
     expect(screen.queryByRole('link', { name: /users & access/i })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: /dashboard/i })).toHaveAttribute('aria-current', 'page');
   });

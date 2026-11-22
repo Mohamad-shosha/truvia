@@ -1,5 +1,6 @@
 package com.nextrisk.auth.service;
 
+import com.nextrisk.activity.ActivityService;
 import com.nextrisk.auth.dto.AdminUserResponse;
 import com.nextrisk.auth.dto.AuthResponse;
 import com.nextrisk.auth.dto.ChangePasswordRequest;
@@ -53,10 +54,12 @@ public class AuthService {
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokens;
     private final LoginEventRepository loginEvents;
+    private final ActivityService activity;
 
     public AuthService(UserRepository users, RoleRepository roles, RefreshTokenRepository refreshTokenRepository,
             PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager,
-            JwtService jwtService, RefreshTokenService refreshTokens, LoginEventRepository loginEvents) {
+            JwtService jwtService, RefreshTokenService refreshTokens, LoginEventRepository loginEvents,
+            ActivityService activity) {
         this.users = users;
         this.roles = roles;
         this.refreshTokenRepository = refreshTokenRepository;
@@ -65,6 +68,11 @@ public class AuthService {
         this.jwtService = jwtService;
         this.refreshTokens = refreshTokens;
         this.loginEvents = loginEvents;
+        this.activity = activity;
+    }
+
+    private User actorOrNull(String subject) {
+        return subject == null ? null : users.findById(userIdFrom(subject)).orElse(null);
     }
 
     /** Parses the JWT subject into a user id; any malformed subject is treated as an invalid token. */
@@ -153,7 +161,7 @@ public class AuthService {
 
     /** Admin: creates a new user account with specified role. */
     @Transactional
-    public AdminUserResponse createUserByAdmin(CreateUserRequest request) {
+    public AdminUserResponse createUserByAdmin(String actorSubject, CreateUserRequest request) {
         String email = normalizeEmail(request.email());
         if (users.existsByEmail(email)) {
             throw new EmailAlreadyExistsException();
@@ -177,12 +185,14 @@ public class AuthService {
         }
 
         log.info("Admin created new user (userId={}, role={})", user.getId(), role.getName());
+        activity.record(actorOrNull(actorSubject), ActivityService.USER_CREATED, "Account created for " + user.getFullName(),
+                "Role " + role.getName().replace("ROLE_", "").replace('_', ' '));
         return AdminUserResponse.from(user);
     }
 
     /** Admin: resets any user's password and revokes existing sessions for security. */
     @Transactional
-    public void adminResetPassword(Long userId, ResetPasswordRequest request) {
+    public void adminResetPassword(String actorSubject, Long userId, ResetPasswordRequest request) {
         User user = users.findById(userId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User not found with id: " + userId));
 
@@ -194,6 +204,8 @@ public class AuthService {
         // Revoke active refresh tokens for this user to force re-login
         refreshTokenRepository.revokeAllForUser(user.getId(), Instant.now());
         log.info("Admin reset password for user (userId={})", user.getId());
+        activity.record(actorOrNull(actorSubject), ActivityService.USER_PASSWORD_RESET,
+                "Password reset for " + user.getFullName(), "All of the user's sessions were signed out");
     }
 
     /**
@@ -214,6 +226,9 @@ public class AuthService {
             refreshTokenRepository.revokeAllForUser(user.getId(), Instant.now());
         }
         log.info("Admin changed account status (userId={}, enabled={}, actorId={})", user.getId(), enabled, actorId);
+        activity.record(actorOrNull(actorSubject), ActivityService.USER_STATUS,
+                user.getFullName() + (enabled ? " enabled" : " disabled"),
+                enabled ? "The account can sign in again" : "Signed out of every session");
         return AdminUserResponse.from(user);
     }
 

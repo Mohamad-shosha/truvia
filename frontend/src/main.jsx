@@ -5,6 +5,7 @@ import App from './App';
 import { AuthProvider } from './context/AuthContext';
 import { initTheme } from './components/ThemeToggle';
 import './styles/index.css';
+import './styles/risk.css';
 
 initTheme();
 

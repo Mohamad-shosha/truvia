@@ -101,3 +101,39 @@ export const DeviceIcon = (p) => (
     <path d="M8 20h8M12 16.5V20" />
   </svg>
 );
+const base = { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true };
+export const WarningIcon = (p) => (
+  <svg width="18" height="18" {...base} {...p}>
+    <path d="M12 3.5l9 16H3l9-16z" />
+    <path d="M12 10v4M12 17v.01" />
+  </svg>
+);
+export const PulseIcon = (p) => (
+  <svg width="18" height="18" {...base} {...p}>
+    <path d="M3 12h4l2.5-6 4 12 2.5-6H21" />
+  </svg>
+);
+export const SparkIcon = (p) => (
+  <svg width="18" height="18" {...base} {...p}>
+    <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z" />
+    <path d="M19 16l.7 1.8 1.8.7-1.8.7L19 21l-.7-1.8-1.8-.7 1.8-.7L19 16z" />
+  </svg>
+);
+export const BellIcon = (p) => (
+  <svg width="18" height="18" {...base} {...p}>
+    <path d="M6 16V11a6 6 0 0112 0v5l1.5 2h-15L6 16z" />
+    <path d="M10 20a2 2 0 004 0" />
+  </svg>
+);
+export const SearchIcon = (p) => (
+  <svg width="18" height="18" {...base} {...p}>
+    <circle cx="11" cy="11" r="6.5" />
+    <path d="M16 16l4.5 4.5" />
+  </svg>
+);
+export const LogoutIcon = (p) => (
+  <svg width="18" height="18" {...base} {...p}>
+    <path d="M10 5H6a2 2 0 00-2 2v10a2 2 0 002 2h4" />
+    <path d="M15 8l4 4-4 4M19 12H9" />
+  </svg>
+);
