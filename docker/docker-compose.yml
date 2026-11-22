@@ -48,6 +48,8 @@ services:
       BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-}
       BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-}
       BOOTSTRAP_ADMIN_NAME: ${BOOTSTRAP_ADMIN_NAME:-Platform Administrator}
+      # Sample risks (flagged sample=1) until real data is loaded. Set DEMO_DATA_ENABLED=false in .env to turn off.
+      DEMO_DATA_ENABLED: ${DEMO_DATA_ENABLED:-true}
     ports:
       - "127.0.0.1:8080:8080"
     healthcheck:

@@ -29,7 +29,7 @@ class DatabaseAndConfigIntegrationTest extends AbstractIntegrationTest {
         var result = flyway.migrate();
         assertThat(result.migrationsExecuted).isZero();
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM roles", Integer.class)).isEqualTo(5);
-        assertThat(flyway.info().applied()).hasSize(4);
+        assertThat(flyway.info().applied()).hasSize(5);
     }
 
     @Test
