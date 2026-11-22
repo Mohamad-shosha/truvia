@@ -17,6 +17,7 @@ vi.mock('../services/authService', () => ({
     changePassword: vi.fn(),
   },
 }));
+vi.mock('../services/riskService', async () => (await import('./dashboardMocks')).riskServiceMock());
 vi.mock('../services/dashboardService', async () => (await import('./dashboardMocks')).dashboardServiceMock());
 vi.mock('../services/adminService', () => ({
   adminPing: vi.fn(),
@@ -72,13 +73,13 @@ describe('auth initialization and protected routes', () => {
   it('redirects signed-in users away from login to the dashboard (no redirect loop)', async () => {
     signedIn(member);
     renderApp('/login');
-    expect(await screen.findByRole('heading', { name: /welcome back, jane/i })).toBeInTheDocument();
+    expect(await screen.findByText(/welcome back, jane/i)).toBeInTheDocument();
   });
 
   it('sends the root path to the dashboard', async () => {
     signedIn(member);
     renderApp('/');
-    expect(await screen.findByRole('heading', { name: /welcome back, jane/i })).toBeInTheDocument();
+    expect(await screen.findByText(/welcome back, jane/i)).toBeInTheDocument();
   });
 
   it('unknown routes render 404', async () => {

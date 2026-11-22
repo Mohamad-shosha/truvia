@@ -7,11 +7,12 @@ import Button from '../components/Button';
 import Spinner from '../components/Spinner';
 import TrendChart from '../components/dashboard/TrendChart';
 import SessionsPanel from '../components/dashboard/SessionsPanel';
+import RiskOverview from '../components/dashboard/RiskOverview';
+import { RISK_READ_ROLES, downloadRiskCsv } from '../services/riskService';
 import {
   ModuleGrid,
   Panel,
   PeopleList,
-  PlannedKpi,
   RoleBars,
   StatCard,
   lastSeen,
@@ -167,25 +168,10 @@ function AdminOverview() {
 
 /* ---------------- CISO: executive view ---------------- */
 
-const EXECUTIVE_KPIS = [
-  { title: 'Organisational risk score', phase: 'Phase 4' },
-  { title: 'Financial exposure', phase: 'Phase 4' },
-  { title: 'Compliance posture', phase: 'Phase 5' },
-  { title: 'Mean time to remediate', phase: 'Phase 6' },
-];
-
-function ExecutiveView({ showTeam }) {
+function TeamView({ showTeam }) {
   const [team, reload] = useResource(getTeam, showTeam);
   return (
     <>
-      <div className="section-head">
-        <h2 className="section-title">Executive view</h2>
-      </div>
-      <div className="stats">
-        {EXECUTIVE_KPIS.map((k) => (
-          <PlannedKpi key={k.title} {...k} />
-        ))}
-      </div>
       {showTeam && (
         <Panel
           id="team"
@@ -203,48 +189,93 @@ function ExecutiveView({ showTeam }) {
 
 /* ---------------- Page ---------------- */
 
+const PERIODS = [7, 30, 90];
+
 export default function DashboardPage() {
   const { user, hasRole } = useAuth();
   const [me, reloadMe] = useResource(getMyDashboard);
   const isAdmin = hasRole('ROLE_ADMIN');
   const isCiso = hasRole('ROLE_CISO');
+  const canReadRisks = hasRole(...RISK_READ_ROLES);
+  const [days, setDays] = useState(30);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState('');
+
+  async function exportCsv() {
+    setExporting(true);
+    setExportError('');
+    try {
+      await downloadRiskCsv();
+    } catch (err) {
+      setExportError(err.message || 'Export failed.');
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  function refreshAll() {
+    setRefreshKey((k) => k + 1);
+    reloadMe();
+  }
 
   return (
     <section className="page page--wide" aria-labelledby="dashboard-title">
       <header className="dash-head">
         <div>
-          <p className="dash-head__eyebrow muted">{formatDate(new Date().toISOString())}</p>
           <h1 id="dashboard-title" className="page__title">
-            Welcome back, {firstName(user.fullName)}
+            Dashboard
           </h1>
+          <p className="muted dash-head__sub">
+            Welcome back, {firstName(user.fullName)} · {user.roles.map(roleLabel).join(', ')}
+            {canReadRisks && ' — organisational posture across risks, controls and compliance.'}
+          </p>
         </div>
-        <div className="badges">
-          {user.roles.map((r) => (
-            <span key={r} className="badge">
-              {roleLabel(r)}
-            </span>
-          ))}
+        <div className="dash-actions">
+          {canReadRisks && (
+            <>
+              <label className="sr-only" htmlFor="period">
+                Period
+              </label>
+              <select id="period" className="select-input select-input--sm" value={days} onChange={(e) => setDays(Number(e.target.value))}>
+                {PERIODS.map((p) => (
+                  <option key={p} value={p}>
+                    Last {p} days
+                  </option>
+                ))}
+              </select>
+              <Button variant="secondary" className="btn btn--secondary btn--sm" onClick={exportCsv} loading={exporting}>
+                Export
+              </Button>
+            </>
+          )}
+          <Button id="refresh-dashboard" className="btn btn--primary btn--sm" onClick={refreshAll}>
+            Refresh
+          </Button>
         </div>
       </header>
 
-      {me.status === 'loading' && <Loading label="Loading your workspace" />}
-      {me.status === 'error' && <LoadError message={me.error} onRetry={reloadMe} />}
-      {me.status === 'ready' && (
-        <>
-          {me.data.mustChangePassword && (
-            <Alert variant="warning" id="change-password-reminder">
-              You are still using the password your administrator set.{' '}
-              <Link to="/profile">Choose your own password</Link> to keep your account secure.
-            </Alert>
-          )}
-          <MySecurity me={me.data} />
-        </>
+      {exportError && <Alert>{exportError}</Alert>}
+
+      {me.status === 'ready' && me.data.mustChangePassword && (
+        <Alert variant="warning" id="change-password-reminder">
+          You are still using the password your administrator set.{' '}
+          <Link to="/profile">Choose your own password</Link> to keep your account secure.
+        </Alert>
       )}
 
-      {isAdmin && <AdminOverview />}
-      {isCiso && <ExecutiveView showTeam />}
+      {canReadRisks && <RiskOverview days={days} refreshKey={refreshKey} />}
 
+      <div className="section-head">
+        <h2 className="section-title">Your account</h2>
+      </div>
+      {me.status === 'loading' && <Loading label="Loading your workspace" />}
+      {me.status === 'error' && <LoadError message={me.error} onRetry={reloadMe} />}
+      {me.status === 'ready' && <MySecurity me={me.data} />}
       <SessionsPanel onChange={reloadMe} />
+
+      {isAdmin && <AdminOverview key={`admin-${refreshKey}`} />}
+      {isCiso && <TeamView showTeam />}
 
       {me.status === 'ready' && me.data.modules.length > 0 && (
         <Panel id="modules" title="Your modules" subtitle="What your role works with. Planned modules show their roadmap phase.">

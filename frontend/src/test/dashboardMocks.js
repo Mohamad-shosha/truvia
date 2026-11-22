@@ -89,3 +89,72 @@ export function dashboardServiceMock() {
     revokeOtherSessions: vi.fn(() => Promise.resolve(0)),
   };
 }
+
+const heat = Array.from({ length: 5 }, () => [0, 0, 0, 0, 0]);
+heat[3][3] = 2;
+heat[2][3] = 1;
+
+export const sampleRisk = {
+  id: 1,
+  code: 'RSK-001',
+  title: 'AI-Driven Attacks & Deepfake Fraud',
+  description: 'Sample',
+  category: 'Threat & AI Security',
+  businessService: 'Executive Communications & Finance',
+  owner: 'CISO / SecOps',
+  likelihood: 5,
+  impact: 5,
+  inherentScore: 25,
+  inherentLevel: 'CRITICAL',
+  residualLikelihood: 4,
+  residualImpact: 4,
+  residualScore: 16,
+  residualLevel: 'CRITICAL',
+  treatment: 'MITIGATE',
+  status: 'IN_PROGRESS',
+  sample: true,
+  createdBy: null,
+  createdAt: '2026-10-01T09:00:00Z',
+  updatedAt: '2026-11-20T09:00:00Z',
+  closedAt: null,
+};
+
+export const riskOverview = {
+  days: 30,
+  sampleData: true,
+  activeRisks: 18,
+  activeRisksPrevious: 16,
+  highRisks: 9,
+  highRisksPrevious: 10,
+  criticalRisks: 2,
+  riskScore: 34.2,
+  riskScorePrevious: 31.0,
+  trend: [
+    { date: '2026-11-20', riskScore: 31.0, activeRisks: 16 },
+    { date: '2026-11-21', riskScore: 33.5, activeRisks: 17 },
+    { date: '2026-11-22', riskScore: 34.2, activeRisks: 18 },
+  ],
+  heatmap: heat,
+  byStatus: { OPEN: 10, IN_PROGRESS: 8, CLOSED: 6 },
+  byInherentLevel: { CRITICAL: 6, HIGH: 7, MEDIUM: 4, LOW: 1 },
+  topRisks: [sampleRisk],
+};
+
+export const activityItems = [
+  { id: 1, type: 'RISK_UPDATED', title: 'RSK-006 updated', detail: 'VPN gateway', actorName: 'Omar H.', sample: true, createdAt: '2026-11-22T08:00:00Z' },
+];
+
+/** Module factory for vi.mock('../services/riskService'): real role constants, mocked calls. */
+export async function riskServiceMock() {
+  const actual = await vi.importActual('../services/riskService');
+  return {
+    ...actual,
+    listRisks: vi.fn(() => Promise.resolve([sampleRisk])),
+    createRisk: vi.fn(),
+    updateRisk: vi.fn(),
+    deleteRisk: vi.fn(() => Promise.resolve()),
+    getRiskOverview: vi.fn(() => Promise.resolve(riskOverview)),
+    getRecentActivity: vi.fn(() => Promise.resolve(activityItems)),
+    downloadRiskCsv: vi.fn(() => Promise.resolve()),
+  };
+}
